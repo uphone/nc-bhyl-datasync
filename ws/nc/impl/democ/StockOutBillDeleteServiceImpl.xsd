@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<xsd:schema  elementFormDefault="unqualified"  attributeFormDefault="unqualified" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+ jaxb:version="2.0"
+xmlns:ns0="http://democ.impl.nc/StockOutBillDeleteServiceImpl"
+targetNamespace="http://democ.impl.nc/StockOutBillDeleteServiceImpl" >
+	<xsd:annotation>
+        <xsd:appinfo>
+            <jaxb:schemaBindings>
+                <jaxb:package name="nc.impl.democ"/>
+            </jaxb:schemaBindings>
+        </xsd:appinfo>
+    </xsd:annotation>
+
+    <xsd:element name="StockOutBillDeleteServiceImpl" type="ns0:StockOutBillDeleteServiceImpl"/>
+
+    <xsd:complexType name="StockOutBillDeleteServiceImpl"  >
+    </xsd:complexType>
+
+</xsd:schema>

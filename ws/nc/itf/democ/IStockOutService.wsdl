@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions
+xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl"
+xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+xmlns:jaxws="http://java.sun.com/xml/ns/jaxws"
+jaxb:version="2.0"
+xmlns:ns0="http://democ.itf.nc/IStockOutService"
+targetNamespace="http://democ.itf.nc/IStockOutService">
+
+<jaxws:bindings>
+	<jaxws:package name="nc.itf.democ"/>
+</jaxws:bindings>
+
+<wsdl:types>
+   <xsd:schema xmlns:ns="http://democ.itf.nc/IStockOutService"
+			attributeFormDefault="unqualified"
+			elementFormDefault="unqualified"
+			targetNamespace="http://democ.itf.nc/IStockOutService" jaxb:version="2.0">
+	<xsd:annotation>
+    	<xsd:appinfo>
+   			<jaxb:schemaBindings>
+    			<jaxb:package name="nc.itf.democ"/>
+    		</jaxb:schemaBindings>
+   		</xsd:appinfo>
+   	</xsd:annotation>
+	<xsd:element name="stockOut">
+         <xsd:complexType>
+            <xsd:sequence>
+				<xsd:element name="string"  minOccurs="0" nillable="true" type="xsd:string"/>
+             </xsd:sequence>  
+         </xsd:complexType>
+     </xsd:element>
+	<xsd:element name="stockOutResponse">
+         <xsd:complexType>
+            <xsd:sequence>
+				<xsd:element name="return"  minOccurs="0" nillable="true" type="xsd:string"/>
+             </xsd:sequence>  
+         </xsd:complexType>
+     </xsd:element>
+   </xsd:schema>
+</wsdl:types>
+    <wsdl:message name="stockOutRequest">
+        <wsdl:part name="parameters"  element="ns0:stockOut"/>
+    </wsdl:message>
+    <wsdl:message name="stockOutResponse">
+        <wsdl:part name="parameters"  element="ns0:stockOutResponse"/>
+    </wsdl:message>
+
+    <wsdl:portType name="IStockOutServicePortType">
+        <wsdl:operation name="stockOut">
+            <wsdl:input message="ns0:stockOutRequest" wsaw:Action="urn:stockOut"/>
+            <wsdl:output message="ns0:stockOutResponse" wsaw:Action="urn:stockOutResponse"/>
+        </wsdl:operation>
+    </wsdl:portType>
+    
+    
+    <wsdl:binding name="IStockOutServiceSOAP11Binding" type="ns0:IStockOutServicePortType">
+        <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+        <wsdl:operation name="stockOut">
+            <soap:operation soapAction="urn:stockOut" style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:service name="IStockOutService">
+        <wsdl:port name="IStockOutServiceSOAP11port_http" binding="ns0:IStockOutServiceSOAP11Binding">
+            <soap:address location="http://localhost/uapws/service/IStockOutService"/>
+        </wsdl:port>
+    </wsdl:service>
+</wsdl:definitions>

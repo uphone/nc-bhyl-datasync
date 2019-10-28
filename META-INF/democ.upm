@@ -1,0 +1,33 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<module name="democ">
+	<public>
+		<component remote="true" singleton="true" tx="CMT">
+			<interface>nc.itf.democ.IStockNumQueryService</interface>
+			<implementation>nc.impl.democ.StockNumQueryServiceImpl</implementation>
+			<extension class="nc.uap.ws.deploy.OxbWSExtensionProcessor">
+				<wsdl>/nc/itf/democ/IStockNumQueryService.wsdl</wsdl>
+				<address>/democ</address>
+			</extension>
+		</component>
+		
+		<component remote="true" singleton="true" tx="CMT">
+			<interface>nc.itf.democ.IStockOutService</interface>
+			<implementation>nc.impl.democ.StockOutServiceImpl</implementation>
+			<extension class="nc.uap.ws.deploy.OxbWSExtensionProcessor">
+				<wsdl>/nc/itf/democ/IStockOutService.wsdl</wsdl>
+				<address>/democ</address>
+			</extension>
+		</component>
+		
+		<component remote="true" singleton="true" tx="CMT">
+			<interface>nc.itf.democ.IStockOutBillDeleteService</interface>
+			<implementation>nc.impl.democ.StockOutBillDeleteServiceImpl</implementation>
+			<extension class="nc.uap.ws.deploy.OxbWSExtensionProcessor">
+				<wsdl>/nc/itf/democ/IStockOutBillDeleteService.wsdl</wsdl>
+				<address>/democ</address>
+			</extension>
+		</component>
+	</public>
+	<private>
+	</private>
+</module>

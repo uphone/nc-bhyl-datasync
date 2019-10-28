@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions
+xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl"
+xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+xmlns:jaxws="http://java.sun.com/xml/ns/jaxws"
+jaxb:version="2.0"
+xmlns:ns0="http://democ.itf.nc/IStockNumQueryService"
+targetNamespace="http://democ.itf.nc/IStockNumQueryService">
+
+<jaxws:bindings>
+	<jaxws:package name="nc.itf.democ"/>
+</jaxws:bindings>
+
+<wsdl:types>
+   <xsd:schema xmlns:ns="http://democ.itf.nc/IStockNumQueryService"
+			attributeFormDefault="unqualified"
+			elementFormDefault="unqualified"
+			targetNamespace="http://democ.itf.nc/IStockNumQueryService" jaxb:version="2.0">
+	<xsd:annotation>
+    	<xsd:appinfo>
+   			<jaxb:schemaBindings>
+    			<jaxb:package name="nc.itf.democ"/>
+    		</jaxb:schemaBindings>
+   		</xsd:appinfo>
+   	</xsd:annotation>
+	<xsd:element name="stockNumQuery">
+         <xsd:complexType>
+            <xsd:sequence>
+				<xsd:element name="string"  minOccurs="0" nillable="true" type="xsd:string"/>
+             </xsd:sequence>  
+         </xsd:complexType>
+     </xsd:element>
+	<xsd:element name="stockNumQueryResponse">
+         <xsd:complexType>
+            <xsd:sequence>
+				<xsd:element name="return"  minOccurs="0" nillable="true" type="xsd:string"/>
+             </xsd:sequence>  
+         </xsd:complexType>
+     </xsd:element>
+   </xsd:schema>
+</wsdl:types>
+    <wsdl:message name="stockNumQueryRequest">
+        <wsdl:part name="parameters"  element="ns0:stockNumQuery"/>
+    </wsdl:message>
+    <wsdl:message name="stockNumQueryResponse">
+        <wsdl:part name="parameters"  element="ns0:stockNumQueryResponse"/>
+    </wsdl:message>
+
+    <wsdl:portType name="IStockNumQueryServicePortType">
+        <wsdl:operation name="stockNumQuery">
+            <wsdl:input message="ns0:stockNumQueryRequest" wsaw:Action="urn:stockNumQuery"/>
+            <wsdl:output message="ns0:stockNumQueryResponse" wsaw:Action="urn:stockNumQueryResponse"/>
+        </wsdl:operation>
+    </wsdl:portType>
+    
+    
+    <wsdl:binding name="IStockNumQueryServiceSOAP11Binding" type="ns0:IStockNumQueryServicePortType">
+        <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+        <wsdl:operation name="stockNumQuery">
+            <soap:operation soapAction="urn:stockNumQuery" style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:service name="IStockNumQueryService">
+        <wsdl:port name="IStockNumQueryServiceSOAP11port_http" binding="ns0:IStockNumQueryServiceSOAP11Binding">
+            <soap:address location="http://localhost/uapws/service/IStockNumQueryService"/>
+        </wsdl:port>
+    </wsdl:service>
+</wsdl:definitions>

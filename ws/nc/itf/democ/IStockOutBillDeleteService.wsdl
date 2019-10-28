@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wsdl:definitions
+xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/"
+xmlns:wsaw="http://www.w3.org/2006/05/addressing/wsdl"
+xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+xmlns:soap="http://schemas.xmlsoap.org/wsdl/soap/"
+xmlns:jaxb="http://java.sun.com/xml/ns/jaxb"
+xmlns:jaxws="http://java.sun.com/xml/ns/jaxws"
+jaxb:version="2.0"
+xmlns:ns0="http://democ.itf.nc/IStockOutBillDeleteService"
+targetNamespace="http://democ.itf.nc/IStockOutBillDeleteService">
+
+<jaxws:bindings>
+	<jaxws:package name="nc.itf.democ"/>
+</jaxws:bindings>
+
+<wsdl:types>
+   <xsd:schema xmlns:ns="http://democ.itf.nc/IStockOutBillDeleteService"
+			attributeFormDefault="unqualified"
+			elementFormDefault="unqualified"
+			targetNamespace="http://democ.itf.nc/IStockOutBillDeleteService" jaxb:version="2.0">
+	<xsd:annotation>
+    	<xsd:appinfo>
+   			<jaxb:schemaBindings>
+    			<jaxb:package name="nc.itf.democ"/>
+    		</jaxb:schemaBindings>
+   		</xsd:appinfo>
+   	</xsd:annotation>
+	<xsd:element name="stockOutBillDelete">
+         <xsd:complexType>
+            <xsd:sequence>
+				<xsd:element name="string"  minOccurs="0" nillable="true" type="xsd:string"/>
+             </xsd:sequence>  
+         </xsd:complexType>
+     </xsd:element>
+	<xsd:element name="stockOutBillDeleteResponse">
+         <xsd:complexType>
+            <xsd:sequence>
+				<xsd:element name="return"  minOccurs="0" nillable="true" type="xsd:string"/>
+             </xsd:sequence>  
+         </xsd:complexType>
+     </xsd:element>
+   </xsd:schema>
+</wsdl:types>
+    <wsdl:message name="stockOutBillDeleteRequest">
+        <wsdl:part name="parameters"  element="ns0:stockOutBillDelete"/>
+    </wsdl:message>
+    <wsdl:message name="stockOutBillDeleteResponse">
+        <wsdl:part name="parameters"  element="ns0:stockOutBillDeleteResponse"/>
+    </wsdl:message>
+
+    <wsdl:portType name="IStockOutBillDeleteServicePortType">
+        <wsdl:operation name="stockOutBillDelete">
+            <wsdl:input message="ns0:stockOutBillDeleteRequest" wsaw:Action="urn:stockOutBillDelete"/>
+            <wsdl:output message="ns0:stockOutBillDeleteResponse" wsaw:Action="urn:stockOutBillDeleteResponse"/>
+        </wsdl:operation>
+    </wsdl:portType>
+    
+    
+    <wsdl:binding name="IStockOutBillDeleteServiceSOAP11Binding" type="ns0:IStockOutBillDeleteServicePortType">
+        <soap:binding transport="http://schemas.xmlsoap.org/soap/http" style="document"/>
+        <wsdl:operation name="stockOutBillDelete">
+            <soap:operation soapAction="urn:stockOutBillDelete" style="document"/>
+            <wsdl:input>
+                <soap:body use="literal"/>
+            </wsdl:input>
+            <wsdl:output>
+                <soap:body use="literal"/>
+            </wsdl:output>
+        </wsdl:operation>
+    </wsdl:binding>
+    <wsdl:service name="IStockOutBillDeleteService">
+        <wsdl:port name="IStockOutBillDeleteServiceSOAP11port_http" binding="ns0:IStockOutBillDeleteServiceSOAP11Binding">
+            <soap:address location="http://localhost/uapws/service/IStockOutBillDeleteService"/>
+        </wsdl:port>
+    </wsdl:service>
+</wsdl:definitions>
