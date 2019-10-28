@@ -111,12 +111,12 @@ public class DeptSyncWorkPlugin implements IBackgroundWorkPlugin {
   </Result>
 </DocumentElement>
 				 */
-				String rst = resData.substring(resData.indexOf("</RST>")+5,resData.indexOf("</RST>"));
+				String rst = resData.substring(resData.indexOf("<RST>")+5,resData.indexOf("</RST>"));
 //				HashMap retMap = new XmlMapper().readValue(resData,
 //						HashMap.class);
 //				String rst = (String) ((Map) retMap.get("Result")).get("RST");
 				if ("F".equalsIgnoreCase(rst)) {
-					String errMsg = resData.substring(resData.indexOf("</MSG>")+5,resData.indexOf("</MSG>"));
+					String errMsg = resData.substring(resData.indexOf("<MSG>")+5,resData.indexOf("</MSG>"));
 					throw new Exception(errMsg);
 				}
 				String pk_log = OidGenerator.getInstance().nextOid();
