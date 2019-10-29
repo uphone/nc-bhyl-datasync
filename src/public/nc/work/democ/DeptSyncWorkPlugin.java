@@ -4,7 +4,7 @@
    ts char(19),
    time1 char(19),
    time2 char(19),
-   itf_name varchar(50),
+   itf_name varchar(50), -- 1:现存量查询， 2：新增材料出库单， 3：删除材料出库单， B1：同步部门数据到Beauty，B2：同步人员数据到Beauty，BZ_BE20：同步部门数据到HIS，BZ_BE21：同步人员数据到HIS，BZ_BE22：同步物料数据到HIS
    req_data varchar(2000),
    res_data varchar(2000),
    status int default 0,
@@ -38,6 +38,7 @@ import org.apache.axis.client.Service;
 // 部门信息同步后台任务
 public class DeptSyncWorkPlugin implements IBackgroundWorkPlugin {
 	private String secKey = "35fd0ec3";
+
 	@Override
 	public PreAlertObject executeTask(BgWorkingContext context)
 			throws BusinessException {
@@ -75,6 +76,8 @@ public class DeptSyncWorkPlugin implements IBackgroundWorkPlugin {
 		BaseDAO dao = new BaseDAO();
 		List<Map> rows = (List<Map>) dao.executeQuery(sql.toString(),
 				new MapListProcessor());
+		if (rows == null || rows.size() == 0)
+			return null;
 		String[] keys = new String[] { "JGDM", "JGMC", "JGJC", "SJJGDM",
 				"SJJGMC", "ZZJGDM", "JGDZ", "LXR", "LXDH", "EnterpriseID",
 				"CompanyID", "CompanyDeptID", "Active", "JGLB" };
@@ -95,7 +98,8 @@ public class DeptSyncWorkPlugin implements IBackgroundWorkPlugin {
 			xml.append("</CSXX></NETHIS>");
 			Map serviceParam = new HashMap();
 			String businessInfo = xml.toString();
-			String businessInfoEnc = DemocWorkUtil.DESEncrypt(secKey, businessInfo);
+			String businessInfoEnc = DemocWorkUtil.DESEncrypt(secKey,
+					businessInfo);
 			serviceParam.put("url", url);
 			serviceParam.put("namespace", namespace);
 			serviceParam.put("method", method);
@@ -104,19 +108,19 @@ public class DeptSyncWorkPlugin implements IBackgroundWorkPlugin {
 			try {
 				resData = callService(serviceParam);
 				/*
-				 * <DocumentElement>
-  <Result>
-    <RST>T</RST>
-    <MSG>操作成功！</MSG>
-  </Result>
-</DocumentElement>
+				 * <DocumentElement> <Result> <RST>T</RST> <MSG>操作成功！</MSG>
+				 * </Result> </DocumentElement>
 				 */
-				String rst = resData.substring(resData.indexOf("<RST>")+5,resData.indexOf("</RST>"));
-//				HashMap retMap = new XmlMapper().readValue(resData,
-//						HashMap.class);
-//				String rst = (String) ((Map) retMap.get("Result")).get("RST");
+				String rst = resData.substring(resData.indexOf("<RST>") + 5,
+						resData.indexOf("</RST>"));
+				// HashMap retMap = new XmlMapper().readValue(resData,
+				// HashMap.class);
+				// String rst = (String) ((Map)
+				// retMap.get("Result")).get("RST");
 				if ("F".equalsIgnoreCase(rst)) {
-					String errMsg = resData.substring(resData.indexOf("<MSG>")+5,resData.indexOf("</MSG>"));
+					String errMsg = resData.substring(
+							resData.indexOf("<MSG>") + 5,
+							resData.indexOf("</MSG>"));
 					throw new Exception(errMsg);
 				}
 				String pk_log = OidGenerator.getInstance().nextOid();
@@ -179,7 +183,8 @@ public class DeptSyncWorkPlugin implements IBackgroundWorkPlugin {
 		String actionUrl = "http://tempuri.org/nethis_common_business"; // http://tempuri.org/nethis_common_business
 		String method = (String) param.get("method"); // "nethis_common_business";
 		String userId = DemocWorkUtil.DESEncrypt(secKey, "shbh"); // "shbh";
-		String userPassword = DemocWorkUtil.DESEncrypt(secKey, "689222BDC8BD33045F75C5C8411F41B4049D4618"); // "689222BDC8BD33045F75C5C8411F41B4049D4618";
+		String userPassword = DemocWorkUtil.DESEncrypt(secKey,
+				"689222BDC8BD33045F75C5C8411F41B4049D4618"); // "689222BDC8BD33045F75C5C8411F41B4049D4618";
 		String businessCode = "BZ_BE20";
 		String businessInfo = (String) param.get("businessInfo");
 		Service service = new Service();

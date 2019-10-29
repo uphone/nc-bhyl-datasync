@@ -9,11 +9,6 @@ import java.util.Map;
 
 import javax.xml.namespace.QName;
 
-import org.apache.axis.client.Call;
-import org.apache.axis.client.Service;
-
-import com.fasterxml.jackson.dataformat.xml.XmlMapper;
-
 import nc.bs.dao.BaseDAO;
 import nc.bs.logging.Logger;
 import nc.bs.pub.pa.PreAlertObject;
@@ -23,6 +18,9 @@ import nc.bs.uap.oid.OidGenerator;
 import nc.jdbc.framework.SQLParameter;
 import nc.jdbc.framework.processor.MapListProcessor;
 import nc.vo.pub.BusinessException;
+
+import org.apache.axis.client.Call;
+import org.apache.axis.client.Service;
 
 // 物料同步后台任务
 public class MaterialSyncWorkPlugin implements IBackgroundWorkPlugin {
@@ -62,6 +60,8 @@ public class MaterialSyncWorkPlugin implements IBackgroundWorkPlugin {
 		BaseDAO dao = new BaseDAO();
 		List<Map> rows = (List<Map>) dao.executeQuery(sql.toString(),
 				new MapListProcessor());
+		if (rows == null || rows.size() == 0)
+			return null;
 		String[] keys = new String[] { "JGDM", "YPDM", "YPMC", "YPGG", "YPJX",
 				"YPLB", "TJFL", "GNFL", "CJMC", "YPLY", "PZWH", "JYBZ", "YPDW",
 				"YPDJ", "YPJL", "JLDW", "JLDWXS", "MZDW", "MZDWXS", "ZYDW",
@@ -76,10 +76,14 @@ public class MaterialSyncWorkPlugin implements IBackgroundWorkPlugin {
 			xml.append("<NETHIS><CSXX>");
 			for (String key : keys) {
 				String mapKey = key.toLowerCase();
-				String value = row.get(mapKey) == null ? "" : row.get(mapKey).toString();
-				if("YPJL".equalsIgnoreCase(mapKey) && "".equals(value)) value = "0";
-				else if("YPDJ".equalsIgnoreCase(mapKey) && "".equals(value)) value = "0";
-				else if("ZXDJ".equalsIgnoreCase(mapKey) && "".equals(value)) value = "0";
+				String value = row.get(mapKey) == null ? "" : row.get(mapKey)
+						.toString();
+				if ("YPJL".equalsIgnoreCase(mapKey) && "".equals(value))
+					value = "0";
+				else if ("YPDJ".equalsIgnoreCase(mapKey) && "".equals(value))
+					value = "0";
+				else if ("ZXDJ".equalsIgnoreCase(mapKey) && "".equals(value))
+					value = "0";
 				xml.append("<").append(key).append(">");
 				xml.append(value);
 				xml.append("</").append(key).append(">");
@@ -87,7 +91,8 @@ public class MaterialSyncWorkPlugin implements IBackgroundWorkPlugin {
 			xml.append("</CSXX></NETHIS>");
 			Map serviceParam = new HashMap();
 			String businessInfo = xml.toString();
-			String businessInfoEnc = DemocWorkUtil.DESEncrypt(secKey, businessInfo);
+			String businessInfoEnc = DemocWorkUtil.DESEncrypt(secKey,
+					businessInfo);
 			serviceParam.put("url", url);
 			serviceParam.put("namespace", namespace);
 			serviceParam.put("method", method);
@@ -95,15 +100,19 @@ public class MaterialSyncWorkPlugin implements IBackgroundWorkPlugin {
 			String resData = null;
 			try {
 				resData = callService(serviceParam);
-				String rst = resData.substring(resData.indexOf("<RST>")+5,resData.indexOf("</RST>"));
-//				HashMap retMap = new XmlMapper().readValue(resData,
-//						HashMap.class);
-//				String rst = (String) ((Map) retMap.get("Result")).get("RST");
+				String rst = resData.substring(resData.indexOf("<RST>") + 5,
+						resData.indexOf("</RST>"));
+				// HashMap retMap = new XmlMapper().readValue(resData,
+				// HashMap.class);
+				// String rst = (String) ((Map)
+				// retMap.get("Result")).get("RST");
 				if ("F".equalsIgnoreCase(rst)) {
-					String errMsg = resData.substring(resData.indexOf("<MSG>")+5,resData.indexOf("</MSG>"));
+					String errMsg = resData.substring(
+							resData.indexOf("<MSG>") + 5,
+							resData.indexOf("</MSG>"));
 					throw new Exception(errMsg);
-//					throw new Exception(
-//							(String) ((Map) retMap.get("Result")).get("MSG"));
+					// throw new Exception(
+					// (String) ((Map) retMap.get("Result")).get("MSG"));
 				}
 				String pk_log = OidGenerator.getInstance().nextOid();
 				String logSql = "insert into BHYL_DATASYNC_LOG(PK_LOG,TS,TIME1,TIME2,ITF_NAME,REQ_DATA,REQ_DATA_ENC,RES_DATA,STATUS) values(?,?,?,?,?,?,?,?,?)";
@@ -165,7 +174,8 @@ public class MaterialSyncWorkPlugin implements IBackgroundWorkPlugin {
 		String actionUrl = "http://tempuri.org/nethis_common_business"; // http://tempuri.org/nethis_common_business
 		String method = (String) param.get("method"); // "nethis_common_business";
 		String userId = DemocWorkUtil.DESEncrypt(secKey, "shbh"); // "shbh";
-		String userPassword = DemocWorkUtil.DESEncrypt(secKey, "689222BDC8BD33045F75C5C8411F41B4049D4618"); // "689222BDC8BD33045F75C5C8411F41B4049D4618";
+		String userPassword = DemocWorkUtil.DESEncrypt(secKey,
+				"689222BDC8BD33045F75C5C8411F41B4049D4618"); // "689222BDC8BD33045F75C5C8411F41B4049D4618";
 		String businessCode = "BZ_BE22";
 		String businessInfo = (String) param.get("businessInfo");
 		Service service = new Service();

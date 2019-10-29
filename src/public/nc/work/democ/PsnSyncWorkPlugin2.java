@@ -23,10 +23,8 @@ import org.apache.axis.client.Call;
 import org.apache.axis.client.Service;
 
 // 人员信息同步后台任务
-public class PsnSyncWorkPlugin implements IBackgroundWorkPlugin {
+public class PsnSyncWorkPlugin2 implements IBackgroundWorkPlugin {
 
-	private String secKey = "35fd0ec3";
-	
 	@Override
 	public PreAlertObject executeTask(BgWorkingContext context)
 			throws BusinessException {
@@ -86,26 +84,23 @@ public class PsnSyncWorkPlugin implements IBackgroundWorkPlugin {
 			xml.append("</CSXX></NETHIS>");
 			Map serviceParam = new HashMap();
 			String businessInfo = xml.toString();
-			String businessInfoEnc = DemocWorkUtil.DESEncrypt(secKey, businessInfo);
 			serviceParam.put("url", url);
 			serviceParam.put("namespace", namespace);
 			serviceParam.put("method", method);
-			serviceParam.put("businessInfo", businessInfoEnc);
+			serviceParam.put("businessInfo", businessInfo);
 			String resData = null;
 			try {
 				resData = callService(serviceParam);
-				String rst = resData.substring(resData.indexOf("<RST>")+5,resData.indexOf("</RST>"));
-//				HashMap retMap = new XmlMapper().readValue(resData,
-//						HashMap.class);
-//				String rst = (String) ((Map) retMap.get("Result")).get("RST");
+				String rst = resData.substring(resData.indexOf("<RST>") + 5,
+						resData.indexOf("</RST>"));
 				if ("F".equalsIgnoreCase(rst)) {
-					String errMsg = resData.substring(resData.indexOf("<MSG>")+5,resData.indexOf("</MSG>"));
+					String errMsg = resData.substring(
+							resData.indexOf("<MSG>") + 5,
+							resData.indexOf("</MSG>"));
 					throw new Exception(errMsg);
-//					throw new Exception(
-//							(String) ((Map) retMap.get("Result")).get("MSG"));
 				}
 				String pk_log = OidGenerator.getInstance().nextOid();
-				String logSql = "insert into BHYL_DATASYNC_LOG(PK_LOG,TS,TIME1,TIME2,ITF_NAME,REQ_DATA,REQ_DATA_ENC,RES_DATA,STATUS) values(?,?,?,?,?,?,?,?,?)";
+				String logSql = "insert into BHYL_DATASYNC_LOG(PK_LOG,TS,TIME1,TIME2,ITF_NAME,REQ_DATA,RES_DATA,STATUS) values(?,?,?,?,?,?,?,?)";
 				String time2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 						.format(Calendar.getInstance().getTime());
 				SQLParameter parameter = new SQLParameter();
@@ -113,16 +108,15 @@ public class PsnSyncWorkPlugin implements IBackgroundWorkPlugin {
 				parameter.addParam(time2);
 				parameter.addParam(time1);
 				parameter.addParam(time2);
-				parameter.addParam("BZ_BE21");
+				parameter.addParam("B2");
 				parameter.addParam(businessInfo);
-				parameter.addParam(businessInfoEnc);
 				parameter.addParam(resData);
 				parameter.addParam(1);
 				dao.executeUpdate(logSql, parameter);
 			} catch (Throwable ex) {
 				Logger.error(ex);
 				String pk_log = OidGenerator.getInstance().nextOid();
-				String logSql = "insert into BHYL_DATASYNC_LOG(PK_LOG,TS,TIME1,TIME2,ITF_NAME,REQ_DATA,REQ_DATA_ENC,RES_DATA,STATUS,ERR_MSG) values(?,?,?,?,?,?,?,?,?,?)";
+				String logSql = "insert into BHYL_DATASYNC_LOG(PK_LOG,TS,TIME1,TIME2,ITF_NAME,REQ_DATA,RES_DATA,STATUS,ERR_MSG) values(?,?,?,?,?,?,?,?,?)";
 				String time2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
 						.format(Calendar.getInstance().getTime());
 				SQLParameter parameter = new SQLParameter();
@@ -130,9 +124,8 @@ public class PsnSyncWorkPlugin implements IBackgroundWorkPlugin {
 				parameter.addParam(time2);
 				parameter.addParam(time1);
 				parameter.addParam(time2);
-				parameter.addParam("BZ_BE21");
+				parameter.addParam("B2");
 				parameter.addParam(businessInfo);
-				parameter.addParam(businessInfoEnc);
 				parameter.addParam(resData);
 				parameter.addParam(0);
 				String errMsg = ex.getMessage();
@@ -158,20 +151,20 @@ public class PsnSyncWorkPlugin implements IBackgroundWorkPlugin {
 		 * 接口登录账号：shbh 接口登录秘钥：35fd0ec3
 		 * 接口登录密码：689222BDC8BD33045F75C5C8411F41B4049D4618
 		 */
-		String url = (String) param.get("url"); // "https://chisapp.bestway.cn/HISWebService/NetHisWebService.asmx?wsdl";
+		String url = (String) param.get("url"); // "http://dv5mnm.natappfree.cc/shiyu_interface_war_exploded/cxfservice/interface?wsdl";
 		String namespace = (String) param.get("namespace"); // "http://tempuri.org/";
-															// wsdl中definitions根节点的targetNamespace属性值
-		String actionUrl = "http://tempuri.org/nethis_common_business"; // http://tempuri.org/nethis_common_business
-		String method = (String) param.get("method"); // "nethis_common_business";
-		String userId = DemocWorkUtil.DESEncrypt(secKey, "shbh"); // "shbh";
-		String userPassword = DemocWorkUtil.DESEncrypt(secKey, "689222BDC8BD33045F75C5C8411F41B4049D4618"); // "689222BDC8BD33045F75C5C8411F41B4049D4618";
-		String businessCode = "BZ_BE21";
+		// String actionUrl = "http://tempuri.org/nethis_common_business"; //
+		// http://tempuri.org/nethis_common_business
+		String method = (String) param.get("method"); // "InsertTkentity";
+		String userId = "shbh";
+		String userPassword = "689222BDC8BD33045F75C5C8411F41B4049D4618";
+		String businessCode = "B2";
 		String businessInfo = (String) param.get("businessInfo");
 		Service service = new Service();
 		Call call = (Call) service.createCall();
 		call.setTargetEndpointAddress(new java.net.URL(url));
-		call.setSOAPActionURI(actionUrl);
-		call.setUseSOAPAction(true);
+		// call.setSOAPActionURI(actionUrl);
+		// call.setUseSOAPAction(true);
 		call.setOperationName(new QName(namespace, method));
 		// 该方法需要4个参数
 		call.addParameter(new QName(namespace, "userId"),
