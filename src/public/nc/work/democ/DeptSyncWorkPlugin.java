@@ -4,7 +4,15 @@
    ts char(19),
    time1 char(19),
    time2 char(19),
-   itf_name varchar(50), -- 1:现存量查询， 2：新增材料出库单， 3：删除材料出库单， B1：同步部门数据到Beauty，B2：同步人员数据到Beauty，BZ_BE20：同步部门数据到HIS，BZ_BE21：同步人员数据到HIS，BZ_BE22：同步物料数据到HIS
+   itf_name varchar(50), 
+   	-- 1:现存量查询， 
+   	-- 2：新增材料出库单， 
+   	-- 3：删除材料出库单， 
+   	-- B1：同步部门数据到Beauty，
+   	-- B2：同步人员数据到Beauty，
+   	-- BZ_BE20：同步部门数据到HIS，
+   	-- BZ_BE21：同步人员数据到HIS，
+   	-- BZ_BE22：同步物料数据到HIS
    req_data varchar(2000),
    res_data varchar(2000),
    status int default 0,

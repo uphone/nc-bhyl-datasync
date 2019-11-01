@@ -22,12 +22,22 @@ import org.apache.commons.codec.binary.Base64;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+/**
+ * 
+ * @author Administrator
+ * 
+ *         request: { "accountCode":"design", "userCode":"ycl",
+ *         "userPassword":"MTIzcXdl", "orgCode":"B100", "whCode":"B100001",
+ *         "mrCode":"030701010007" }
+ * 
+ *         response(success): { "RST":"T", "MSG":"", "YPDM":"", "KCSL":"",
+ *         "DW":"" } response(error): { "RST":"F", "MSG":"err msg" }
+ */
 public class StockNumQueryServiceImpl implements IStockNumQueryService {
 
 	@Override
 	public String stockNumQuery(String json) {
-		String time1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-				.format(Calendar.getInstance().getTime());
+		String time1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
 		// IOnhandQry
 		BaseDAO dao = null;
 		try {
@@ -66,46 +76,35 @@ public class StockNumQueryServiceImpl implements IStockNumQueryService {
 			}
 
 			// check user & password
-			String pwd = new String(
-					Base64.decodeBase64(userPassword.getBytes()));
-			ILoginQueryService loginQueryService = NCLocator.getInstance()
-					.lookup(ILoginQueryService.class);
-			UserVO userVO = loginQueryService
-					.getUserVOByUserPass(userCode, pwd);
+			String pwd = new String(Base64.decodeBase64(userPassword.getBytes()));
+			ILoginQueryService loginQueryService = NCLocator.getInstance().lookup(ILoginQueryService.class);
+			UserVO userVO = loginQueryService.getUserVOByUserPass(userCode, pwd);
 			if (userVO == null) {
 				throw new Exception("用户名或密码错误");
 			}
 
-			String sql1 = "select pk_org from org_orgs where ISBUSINESSUNIT='Y' and ENABLESTATE=2 and code='"
-					+ orgCode + "'";
-			String pk_org = (String) dao.executeQuery(sql1,
-					new ColumnProcessor());
+			String sql1 = "select pk_org from org_orgs where ISBUSINESSUNIT='Y' and ENABLESTATE=2 and code='" + orgCode + "'";
+			String pk_org = (String) dao.executeQuery(sql1, new ColumnProcessor());
 			if (pk_org == null || "".equals(pk_org)) {
 				throw new Exception("机构代码不存在或未启用");
 			}
-			String sql2 = "select pk_stordoc from bd_stordoc where pk_org='"
-					+ pk_org + "' and ENABLESTATE=2 and code='" + whCode + "'";
-			String pk_stordoc = (String) dao.executeQuery(sql2,
-					new ColumnProcessor());
+			String sql2 = "select pk_stordoc from bd_stordoc where pk_org='" + pk_org + "' and ENABLESTATE=2 and code='" + whCode + "'";
+			String pk_stordoc = (String) dao.executeQuery(sql2, new ColumnProcessor());
 			if (pk_stordoc == null || "".equals(pk_stordoc)) {
 				throw new Exception("仓库代码不存在或未启用");
 			}
-			String sql3 = "select PK_MATERIAL from bd_material where enablestate=2 and code='"
-					+ mrCode + "'";
-			String pk_material = (String) dao.executeQuery(sql3,
-					new ColumnProcessor());
+			String sql3 = "select PK_MATERIAL from bd_material where enablestate=2 and code='" + mrCode + "'";
+			String pk_material = (String) dao.executeQuery(sql3, new ColumnProcessor());
 			if (pk_material == null || "".equals(pk_material)) {
 				throw new Exception("物料代码不存在或未启用");
 			}
 
-			IOnhandQry onhandQuery = NCLocator.getInstance().lookup(
-					IOnhandQry.class);
+			IOnhandQry onhandQuery = NCLocator.getInstance().lookup(IOnhandQry.class);
 			String dims[] = { "pk_org", "cwarehouseid", "cmaterialvid" };
 			OnhandQryCond cond = new OnhandQryCond();
 			cond.addSelectFields(dims);
 			cond.setISSum(true);
-			cond.addFilterDimConditon(dims, new Object[] { pk_org, pk_stordoc,
-					pk_material });
+			cond.addFilterDimConditon(dims, new Object[] { pk_org, pk_stordoc, pk_material });
 			OnhandVO[] vos = onhandQuery.queryOnhand(cond);
 			if (vos == null || vos.length == 0) {
 				throw new Exception("未查询到现存量信息");
@@ -115,22 +114,18 @@ public class StockNumQueryServiceImpl implements IStockNumQueryService {
 				Map ret = new HashMap();
 				OnhandVO vo = vos[0];
 				String pk_measdoc = vo.getCunitid();
-				String sql4 = "select name from bd_measdoc where pk_measdoc='"
-						+ pk_measdoc + "'";
-				String dw = (String) dao.executeQuery(sql4,
-						new ColumnProcessor());
+				String sql4 = "select name from bd_measdoc where pk_measdoc='" + pk_measdoc + "'";
+				String dw = (String) dao.executeQuery(sql4, new ColumnProcessor());
 				ret.put("RST", "T");
 				ret.put("MSG", "");
 				ret.put("YPDM", mrCode);
-				ret.put("KCSL", vo.getNonhandnum() == null ? 0 : vo
-						.getNonhandnum().toDouble());
+				ret.put("KCSL", vo.getNonhandnum() == null ? 0 : vo.getNonhandnum().toDouble());
 				ret.put("DW", dw);
 
 				String retJson = mapper.writeValueAsString(ret);
 				String pk_log = OidGenerator.getInstance().nextOid();
 				String logSql = "insert into BHYL_DATASYNC_LOG(PK_LOG,TS,TIME1,TIME2,ITF_NAME,REQ_DATA,RES_DATA,STATUS) values(?,?,?,?,?,?,?,?)";
-				String time2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-						.format(Calendar.getInstance().getTime());
+				String time2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
 				SQLParameter parameter = new SQLParameter();
 				parameter.addParam(pk_log);
 				parameter.addParam(time2);
@@ -152,14 +147,11 @@ public class StockNumQueryServiceImpl implements IStockNumQueryService {
 		} catch (Exception ex) {
 			Logger.error("StockNumQueryService Error:", ex);
 			String exceptionMsg = ex.getMessage();
-			String errMsg = exceptionMsg == null ? "NPE" : exceptionMsg
-					.replaceAll("\"", "'");
-			String retJson = new StringBuilder().append(
-					"{\"RST\":\"F\",\"MSG\":\"" + errMsg + "\"}").toString();
+			String errMsg = exceptionMsg == null ? "NPE" : exceptionMsg.replaceAll("\"", "'");
+			String retJson = new StringBuilder().append("{\"RST\":\"F\",\"MSG\":\"" + errMsg + "\"}").toString();
 			String pk_log = OidGenerator.getInstance().nextOid();
 			String logSql = "insert into BHYL_DATASYNC_LOG(PK_LOG,TS,TIME1,TIME2,ITF_NAME,REQ_DATA,RES_DATA,STATUS) values(?,?,?,?,?,?,?,?)";
-			String time2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-					.format(Calendar.getInstance().getTime());
+			String time2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
 			SQLParameter parameter = new SQLParameter();
 			parameter.addParam(pk_log);
 			parameter.addParam(time2);

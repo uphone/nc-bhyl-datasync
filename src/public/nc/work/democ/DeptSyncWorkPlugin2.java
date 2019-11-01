@@ -171,8 +171,8 @@ public class DeptSyncWorkPlugin2 implements IBackgroundWorkPlugin {
 		String namespace = (String) param.get("namespace"); // "http://tempuri.org/";
 		// String actionUrl = "http://tempuri.org/nethis_common_business"; // http://tempuri.org/nethis_common_business
 		String method = (String) param.get("method"); // "InsertTkentity";
-		String userId = "shbh";
-		String userPassword = "689222BDC8BD33045F75C5C8411F41B4049D4618";
+		String userId = "SLGZxO8eCYInl7u0kwyWXQ==";
+		String userPassword = "ShW0GnUJwmInXKXRfygRA0t697y2QbKCQyziXjyAu7I=";
 		String businessCode = "B1";
 		String businessInfo = (String) param.get("businessInfo");
 		Service service = new Service();
