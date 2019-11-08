@@ -16,9 +16,9 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 
 import nc.bs.dao.BaseDAO;
+import nc.bs.framework.common.InvocationInfoProxy;
 import nc.bs.framework.common.NCLocator;
 import nc.bs.logging.Logger;
 import nc.bs.uap.oid.OidGenerator;
@@ -35,8 +35,6 @@ import nc.vo.ic.m4d.entity.MaterialOutBodyVO;
 import nc.vo.ic.m4d.entity.MaterialOutHeadVO;
 import nc.vo.ic.m4d.entity.MaterialOutVO;
 import nc.vo.ic.onhand.define.ICBillPickResults;
-import nc.vo.ic.onhand.entity.OnhandVO;
-import nc.vo.ic.onhand.pub.OnhandQryCond;
 import nc.vo.pub.lang.UFDate;
 import nc.vo.pub.lang.UFDouble;
 import nc.vo.pub.workflownote.WorkflownoteVO;
@@ -173,8 +171,11 @@ public class StockOutServiceImpl implements IStockOutService {
 			headVO.setCwarehouseid(pk_stordoc);
 			headVO.setCdptid(pk_dept);
 			headVO.setCdptvid((String)deptData.get("pk_vid"));
-			headVO.setBillmaker(pk_user);
-			headVO.setCreator(pk_user);
+//			headVO.setBillmaker(pk_user);
+//			headVO.setCreator(pk_user);
+//			headVO.setApprover(pk_user);
+//			headVO.setTaudittime(today);
+			//headVO.setModifier(pk_user);
 			headVO.setVdef10(khxm);
 			headVO.setVdef11(khdjh);
 			headVO.setVdef12(ssmc);
@@ -189,12 +190,14 @@ public class StockOutServiceImpl implements IStockOutService {
 			headVO.setCtrantypeid(pk_billtypeid);
 			headVO.setDbilldate(today);
 
+//			UFDouble totalNum = UFDouble.ZERO_DBL;
 			for (int i = 0; i < children.size(); i++) {
 				Map child = (Map) children.get(i);
 				String wlbm = (String) child.get("WLBM");
 				Object ckzslObj = child.get("CKZSL");
 				Object ckfslObj = child.get("CKFSL");
 				UFDouble ckzsl = (ckzslObj == null || "".equals(ckzslObj.toString())) ? UFDouble.ZERO_DBL : new UFDouble(ckzslObj.toString());
+				//totalNum.add(ckzsl);
 				UFDouble ckfsl = (ckfslObj == null || "".equals(ckfslObj.toString())) ? UFDouble.ZERO_DBL : new UFDouble(ckfslObj.toString());
 				String dw = (String) child.get("DW");
 				String pk_unit = null;
@@ -263,11 +266,10 @@ public class StockOutServiceImpl implements IStockOutService {
 				bodyVO.setCbodywarehouseid(pk_stordoc);
 				bodyVO.setCmaterialoid(pk_material);
 				bodyVO.setCmaterialvid(pk_material);
-				// nc.vo.pub.ValidationException: 行10的单位为空，换算率，数量，应发数量不应设置
-				bodyVO.setNnum(ckzsl);
-				bodyVO.setNshouldnum(ckzsl);
-				bodyVO.setNassistnum(ckfsl);
-				bodyVO.setNshouldassistnum(ckfsl);
+				bodyVO.setNshouldassistnum(ckzsl); // 应发数量
+				bodyVO.setNshouldnum(ckzsl); // 应发主数量
+				bodyVO.setNassistnum(ckzsl); // 实发数量
+				bodyVO.setNnum(ckzsl); // 实发主数量
 				bodyVO.setCunitid(pk_unit);
 				bodyVO.setCastunitid(pk_unit);
 				bodyVO.setVchangerate("1/1");
@@ -290,6 +292,7 @@ public class StockOutServiceImpl implements IStockOutService {
 				bodyVO.setDbizdate(today);
 				childVOs[i] = bodyVO;
 			}
+			//headVO.setNtotalnum(totalNum);
 
 			List<MaterialOutBodyVO> pickChildVOs = new ArrayList<MaterialOutBodyVO>();
 			Map<Integer, Integer> idxMap = new HashMap<Integer, Integer>();
@@ -365,6 +368,12 @@ public class StockOutServiceImpl implements IStockOutService {
 				aggVO.setParentVO(headVO);
 				aggVO.setChildrenVO(childVOs);
 			}
+			
+			InvocationInfoProxy proxy = InvocationInfoProxy.getInstance();
+			proxy.setUserId(pk_user);
+			proxy.setUserCode(userCode);
+			proxy.setBizDateTime(today.getMillis());
+			proxy.setGroupId(pk_group);
 			String actionName = "WRITE";
 			WorkflownoteVO workflownotevo = null;
 			Object userObj = null;

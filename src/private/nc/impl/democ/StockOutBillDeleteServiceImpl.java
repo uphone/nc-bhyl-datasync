@@ -12,6 +12,7 @@ import org.apache.commons.codec.binary.Base64;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import nc.bs.dao.BaseDAO;
+import nc.bs.framework.common.InvocationInfoProxy;
 import nc.bs.framework.common.NCLocator;
 import nc.bs.logging.Logger;
 import nc.bs.uap.oid.OidGenerator;
@@ -82,8 +83,15 @@ public class StockOutBillDeleteServiceImpl implements IStockOutBillDeleteService
 				throw new Exception("参数类型错误[businessInfo]");
 			}
 			Map businessInfo = (Map) businessInfoObj;
-			// String hisczygh = (String) businessInfo.get("HISCZYGH"); //
-			// HIS操作员工号
+			String hisczygh = (String) businessInfo.get("HISCZYGH"); // HIS操作员工号
+			if (hisczygh == null || "".equals(hisczygh)) {
+				throw new Exception("HIS操作员工号不能为空[businessInfo.HISCZYGH]");
+			}
+			String sql4 = "select cuserid from sm_user where user_code='" + hisczygh + "'";
+			String pk_user = (String) dao.executeQuery(sql4, new ColumnProcessor());
+			if (pk_user == null || "".equals(pk_user)) {
+				throw new Exception("用户代码不存在或未启用");
+			}
 			// String hisheadid = (String) businessInfo.get("HISHEADID"); //
 			// HIS表头唯一标识号
 			String yybm = (String) businessInfo.get("YYBM"); // 医院编码
@@ -114,6 +122,13 @@ public class StockOutBillDeleteServiceImpl implements IStockOutBillDeleteService
 			if (billStatus != 3) {
 				throw new Exception("出库单未签字，不允许取消签字");
 			}
+
+			InvocationInfoProxy proxy = InvocationInfoProxy.getInstance();
+			proxy.setUserId(pk_user);
+			proxy.setUserCode(userCode);
+			proxy.setBizDateTime(today.getMillis());
+			proxy.setGroupId(pk_group);
+
 			IICPageQuery queryService = NCLocator.getInstance().lookup(IICPageQuery.class);
 			IBill[] billVOs = queryService.pageLazyQueryByIDs(new String[] { billId }, MaterialOutVO.class.getName());
 			MaterialOutVO aggVO = (MaterialOutVO) billVOs[0];
