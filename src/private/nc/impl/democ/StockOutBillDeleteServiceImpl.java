@@ -96,12 +96,12 @@ public class StockOutBillDeleteServiceImpl implements IStockOutBillDeleteService
 			// HIS表头唯一标识号
 			String yybm = (String) businessInfo.get("YYBM"); // 医院编码
 			// String ckbm = (String) businessInfo.get("CKBM"); // 仓库编码
-			String ckdh = (String) businessInfo.get("CKDH"); // ERP出库单表头唯一标识
+			String hisheadid = (String) businessInfo.get("HISHEADID"); // HIS表头唯一标识
 			if (yybm == null || "".equals(yybm)) {
 				throw new Exception("医院编码不能为空[businessInfo.YYBM]");
 			}
-			if (ckdh == null || "".equals(ckdh)) {
-				throw new Exception("出库单号不能为空[businessInfo.CKDH]");
+			if (hisheadid == null || "".equals(hisheadid)) {
+				throw new Exception("HIS表头唯一标识不能为空[businessInfo.HISHEADID]");
 			}
 
 			String sql1 = "select pk_org,pk_vid,pk_group from org_orgs where ISBUSINESSUNIT='Y' and ENABLESTATE=2 and code='" + yybm + "'";
@@ -112,10 +112,10 @@ public class StockOutBillDeleteServiceImpl implements IStockOutBillDeleteService
 			String pk_org = (String) orgData.get("pk_org");
 			String pk_group = (String) orgData.get("pk_group");
 
-			String sql2 = "select cgeneralhid,fbillflag from ic_material_h where pk_org='" + pk_org + "' and vbillcode='" + ckdh + "' and dr=0";
+			String sql2 = "select cgeneralhid,fbillflag from ic_material_h where pk_org='" + pk_org + "' and vdef17='" + hisheadid + "' and dr=0";
 			Map billData = (Map) dao.executeQuery(sql2, new MapProcessor());
 			if (billData == null || billData.size() == 0) {
-				throw new Exception("出库单号不存在");
+				throw new Exception("HIS表头唯一标识不存在");
 			}
 			String billId = (String) billData.get("cgeneralhid");
 			Integer billStatus = (Integer) billData.get("fbillflag");
@@ -129,6 +129,7 @@ public class StockOutBillDeleteServiceImpl implements IStockOutBillDeleteService
 			proxy.setBizDateTime(today.getMillis());
 			proxy.setGroupId(pk_group);
 
+			// 取消签字
 			IICPageQuery queryService = NCLocator.getInstance().lookup(IICPageQuery.class);
 			IBill[] billVOs = queryService.pageLazyQueryByIDs(new String[] { billId }, MaterialOutVO.class.getName());
 			MaterialOutVO aggVO = (MaterialOutVO) billVOs[0];
@@ -138,6 +139,16 @@ public class StockOutBillDeleteServiceImpl implements IStockOutBillDeleteService
 			HashMap hmPfExParams = null;
 			IplatFormEntry platFormEntryService = NCLocator.getInstance().lookup(IplatFormEntry.class);
 			Object actionResult = platFormEntryService.processAction(actionName, billType, workflownotevo, aggVO, userObj, hmPfExParams);
+			
+			// 删除
+			IBill[] billVOs2 = queryService.pageLazyQueryByIDs(new String[] { billId }, MaterialOutVO.class.getName());
+			MaterialOutVO aggVO2 = (MaterialOutVO) billVOs[0];
+			String actionName2 = "DELETE";
+			WorkflownoteVO workflownotevo2 = null;
+			Object userObj2 = null;
+			HashMap hmPfExParams2 = null;
+			Object actionResult2 = platFormEntryService.processAction(actionName2, billType, workflownotevo2, aggVO2, userObj2, hmPfExParams2);
+			
 			Map ret = new HashMap();
 			ret.put("RST", "T");
 

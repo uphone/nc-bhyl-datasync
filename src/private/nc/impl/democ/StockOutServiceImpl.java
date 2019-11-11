@@ -148,12 +148,12 @@ public class StockOutServiceImpl implements IStockOutService {
 				throw new Exception("仓库代码不存在或未启用");
 			}
 			String sql3 = "select pk_dept,pk_vid from org_dept where pk_org='" + pk_org + "' and ENABLESTATE=2 and code='" + kdksbm + "'";
-			Map deptData = (Map)dao.executeQuery(sql3, new MapProcessor());
+			Map deptData = (Map) dao.executeQuery(sql3, new MapProcessor());
 			if (deptData == null || deptData.size() == 0) {
 				throw new Exception("部门代码不存在或未启用");
 			}
 			String pk_dept = (String) deptData.get("pk_dept");
-			
+
 			String sql4 = "select cuserid from sm_user where user_code='" + hisczygh + "'";
 			String pk_user = (String) dao.executeQuery(sql4, new ColumnProcessor());
 			if (pk_user == null || "".equals(pk_user)) {
@@ -170,12 +170,12 @@ public class StockOutServiceImpl implements IStockOutService {
 			headVO.setPk_org_v((String) orgData.get("pk_vid"));
 			headVO.setCwarehouseid(pk_stordoc);
 			headVO.setCdptid(pk_dept);
-			headVO.setCdptvid((String)deptData.get("pk_vid"));
-//			headVO.setBillmaker(pk_user);
-//			headVO.setCreator(pk_user);
-//			headVO.setApprover(pk_user);
-//			headVO.setTaudittime(today);
-			//headVO.setModifier(pk_user);
+			headVO.setCdptvid((String) deptData.get("pk_vid"));
+			// headVO.setBillmaker(pk_user);
+			// headVO.setCreator(pk_user);
+			// headVO.setApprover(pk_user);
+			// headVO.setTaudittime(today);
+			// headVO.setModifier(pk_user);
 			headVO.setVdef10(khxm);
 			headVO.setVdef11(khdjh);
 			headVO.setVdef12(ssmc);
@@ -190,20 +190,20 @@ public class StockOutServiceImpl implements IStockOutService {
 			headVO.setCtrantypeid(pk_billtypeid);
 			headVO.setDbilldate(today);
 
-//			UFDouble totalNum = UFDouble.ZERO_DBL;
+			// UFDouble totalNum = UFDouble.ZERO_DBL;
 			for (int i = 0; i < children.size(); i++) {
 				Map child = (Map) children.get(i);
 				String wlbm = (String) child.get("WLBM");
 				Object ckzslObj = child.get("CKZSL");
 				Object ckfslObj = child.get("CKFSL");
 				UFDouble ckzsl = (ckzslObj == null || "".equals(ckzslObj.toString())) ? UFDouble.ZERO_DBL : new UFDouble(ckzslObj.toString());
-				//totalNum.add(ckzsl);
+				// totalNum.add(ckzsl);
 				UFDouble ckfsl = (ckfslObj == null || "".equals(ckfslObj.toString())) ? UFDouble.ZERO_DBL : new UFDouble(ckfslObj.toString());
 				String dw = (String) child.get("DW");
 				String pk_unit = null;
 				String pch = (String) child.get("PCH");
 				String pk_batchcode = null;
-				String dvalidate = null,dinbounddate=null,dproducedate=null;
+				String dvalidate = null, dinbounddate = null, dproducedate = null;
 				String hisbodyid = (String) child.get("HISBODYID");
 				String bbddh = (String) child.get("BBDDH");
 				String bbddmx = (String) child.get("BBDDMX");
@@ -287,12 +287,19 @@ public class StockOutServiceImpl implements IStockOutService {
 				bodyVO.setVsndef10(hisbodyid);
 				bodyVO.setVsndef11(bbddh);
 				bodyVO.setVsndef12(bbddmx);
+				
+//				 select * from bd_defdoclist where code='004';
+//				 
+//				 select * from bd_defdoc where pk_defdoclist='1001A210000000001M6I';
+//				 
+				// String sql12 = "select pk_defdoc";
+				
 				bodyVO.setVsndef13(pxyxflbm);
 				bodyVO.setCrowno(String.valueOf((i + 1) * 10));
 				bodyVO.setDbizdate(today);
 				childVOs[i] = bodyVO;
 			}
-			//headVO.setNtotalnum(totalNum);
+			// headVO.setNtotalnum(totalNum);
 
 			List<MaterialOutBodyVO> pickChildVOs = new ArrayList<MaterialOutBodyVO>();
 			Map<Integer, Integer> idxMap = new HashMap<Integer, Integer>();
@@ -368,7 +375,7 @@ public class StockOutServiceImpl implements IStockOutService {
 				aggVO.setParentVO(headVO);
 				aggVO.setChildrenVO(childVOs);
 			}
-			
+
 			InvocationInfoProxy proxy = InvocationInfoProxy.getInstance();
 			proxy.setUserId(pk_user);
 			proxy.setUserCode(userCode);
@@ -380,12 +387,14 @@ public class StockOutServiceImpl implements IStockOutService {
 			HashMap hmPfExParams = null;
 			IplatFormEntry platFormEntryService = NCLocator.getInstance().lookup(IplatFormEntry.class);
 			Object actionResult = platFormEntryService.processAction(actionName, billType, workflownotevo, aggVO, userObj, hmPfExParams);
-			MaterialOutVO[] resultBillVOs = (MaterialOutVO[])actionResult;
+			MaterialOutVO[] resultBillVOs = (MaterialOutVO[]) actionResult;
 			MaterialOutVO resultAggVO = resultBillVOs[0];
 			Map ret = new HashMap();
 			// TODO business process
 			ret.put("RST", "T");
-			ret.put("CKDH", resultAggVO.getHead().getVbillcode());
+			String sql21 = "select vbillcode from ic_material_h where cgeneralhid='" + resultAggVO.getHead().getCgeneralhid() + "'";
+			String ckdh = (String) dao.executeQuery(sql21, new ColumnProcessor());
+			ret.put("CKDH", ckdh);
 
 			String retJson = mapper.writeValueAsString(ret);
 			String pk_log = OidGenerator.getInstance().nextOid();
