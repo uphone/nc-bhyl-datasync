@@ -26,55 +26,50 @@ import org.apache.axis.client.Service;
 public class PsnSyncWorkPlugin implements IBackgroundWorkPlugin {
 
 	private String secKey = "35fd0ec3";
-	
+
 	@Override
-	public PreAlertObject executeTask(BgWorkingContext context)
-			throws BusinessException {
-		LinkedHashMap param = context.getEngineContext().getExecutorContext()
-				.getKeyMap();
+	public PreAlertObject executeTask(BgWorkingContext context) throws BusinessException {
+		LinkedHashMap param = context.getEngineContext().getExecutorContext().getKeyMap();
 		boolean isAll = "1".equals(param.get("isAll"));
 		String code = (String) param.get("code");
 		StringBuilder sql = new StringBuilder();
-		sql.append("select B.code as JGDM,");
-		sql.append(" A.clerkcode as RYGH,");
+		sql.append("select * from (");
+		sql.append(" select A.ts,C.code,");
+		sql.append(" B.code as JGDM,A.clerkcode as RYGH,");
 		sql.append(" C.name as XM,");
 		sql.append(" C.sex as XB,");
 		sql.append(" C.Birthdate as CSRQ,");
 		sql.append(" D.Code as RYLB,");
-		sql.append(" E.Jobcode as RYZC,F.Code as KSDM,F.name as KSMC,null as YSJJ,C.id as SFZH,");
+		sql.append(" E.postcode as RYZC,F.Code as KSDM,F.name as KSMC,null as YSJJ,C.id as SFZH,");
 		sql.append(" F.Def1 as CostDeptID,C.secret_email as Mail,");
 		sql.append(" C.Mobile as Tel,A.Poststat as StatuID,A.Ismainjob as ismainjob");
 		sql.append(" from hi_psnjob A left join org_orgs B on A.pk_hrorg=B.Pk_Org");
 		sql.append(" inner join bd_psndoc C on A.pk_psndoc=C.pk_psndoc");
 		sql.append(" left join bd_psncl D on A.pk_psncl = D.Pk_Psncl");
-		sql.append(" left join om_job E on A.Pk_Job=E.Pk_Job");
+		sql.append(" left join om_post E on A.Pk_post=E.Pk_post");
 		sql.append(" left join org_dept F on A.Pk_Dept=F.Pk_Dept");
+		sql.append(" ) T ");
 		if (!isAll) {
 			if (code != null && !"".equals(code.trim())) {
-				sql.append(" where C.code='").append(code).append("'");
+				sql.append(" where code='").append(code).append("'");
 			} else {
 				Calendar now = Calendar.getInstance();
 				now.add(Calendar.DATE, -1);
-				String ts = new SimpleDateFormat("yyyy-MM-dd").format(now
-						.getTime());
+				String ts = new SimpleDateFormat("yyyy-MM-dd").format(now.getTime());
 				ts += " 00:00:00";
-				sql.append(" where A.ts >= '").append(ts).append("'");
+				sql.append(" where ts >= '").append(ts).append("'");
 			}
 		}
 		BaseDAO dao = new BaseDAO();
-		List<Map> rows = (List<Map>) dao.executeQuery(sql.toString(),
-				new MapListProcessor());
+		List<Map> rows = (List<Map>) dao.executeQuery(sql.toString(), new MapListProcessor());
 		if (rows == null || rows.size() == 0)
 			return null;
-		String[] keys = new String[] { "JGDM", "RYGH", "XM", "XB", "CSRQ",
-				"RYLB", "RYZC", "KSDM", "KSMC", "YSJJ", "SFZH", "CostDeptID",
-				"Mail", "Tel", "StatuID", "ismainjob" };
+		String[] keys = new String[] { "JGDM", "RYGH", "XM", "XB", "CSRQ", "RYLB", "RYZC", "KSDM", "KSMC", "YSJJ", "SFZH", "CostDeptID", "Mail", "Tel", "StatuID", "ismainjob" };
 		String method = (String) param.get("method");
 		String url = (String) param.get("url");
 		String namespace = (String) param.get("namespace");
 		for (Map row : rows) {
-			String time1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-					.format(Calendar.getInstance().getTime());
+			String time1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
 			StringBuilder xml = new StringBuilder();
 			xml.append("<NETHIS><CSXX>");
 			for (String key : keys) {
@@ -94,20 +89,20 @@ public class PsnSyncWorkPlugin implements IBackgroundWorkPlugin {
 			String resData = null;
 			try {
 				resData = callService(serviceParam);
-				String rst = resData.substring(resData.indexOf("<RST>")+5,resData.indexOf("</RST>"));
-//				HashMap retMap = new XmlMapper().readValue(resData,
-//						HashMap.class);
-//				String rst = (String) ((Map) retMap.get("Result")).get("RST");
+				String rst = resData.substring(resData.indexOf("<RST>") + 5, resData.indexOf("</RST>"));
+				// HashMap retMap = new XmlMapper().readValue(resData,
+				// HashMap.class);
+				// String rst = (String) ((Map)
+				// retMap.get("Result")).get("RST");
 				if ("F".equalsIgnoreCase(rst)) {
-					String errMsg = resData.substring(resData.indexOf("<MSG>")+5,resData.indexOf("</MSG>"));
+					String errMsg = resData.substring(resData.indexOf("<MSG>") + 5, resData.indexOf("</MSG>"));
 					throw new Exception(errMsg);
-//					throw new Exception(
-//							(String) ((Map) retMap.get("Result")).get("MSG"));
+					// throw new Exception(
+					// (String) ((Map) retMap.get("Result")).get("MSG"));
 				}
 				String pk_log = OidGenerator.getInstance().nextOid();
 				String logSql = "insert into BHYL_DATASYNC_LOG(PK_LOG,TS,TIME1,TIME2,ITF_NAME,REQ_DATA,REQ_DATA_ENC,RES_DATA,STATUS) values(?,?,?,?,?,?,?,?,?)";
-				String time2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-						.format(Calendar.getInstance().getTime());
+				String time2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
 				SQLParameter parameter = new SQLParameter();
 				parameter.addParam(pk_log);
 				parameter.addParam(time2);
@@ -123,8 +118,7 @@ public class PsnSyncWorkPlugin implements IBackgroundWorkPlugin {
 				Logger.error(ex);
 				String pk_log = OidGenerator.getInstance().nextOid();
 				String logSql = "insert into BHYL_DATASYNC_LOG(PK_LOG,TS,TIME1,TIME2,ITF_NAME,REQ_DATA,REQ_DATA_ENC,RES_DATA,STATUS,ERR_MSG) values(?,?,?,?,?,?,?,?,?,?)";
-				String time2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-						.format(Calendar.getInstance().getTime());
+				String time2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
 				SQLParameter parameter = new SQLParameter();
 				parameter.addParam(pk_log);
 				parameter.addParam(time2);
@@ -174,23 +168,14 @@ public class PsnSyncWorkPlugin implements IBackgroundWorkPlugin {
 		call.setUseSOAPAction(true);
 		call.setOperationName(new QName(namespace, method));
 		// 该方法需要4个参数
-		call.addParameter(new QName(namespace, "userId"),
-				org.apache.axis.encoding.XMLType.XSD_STRING,
-				javax.xml.rpc.ParameterMode.IN);
-		call.addParameter(new QName(namespace, "userPassword"),
-				org.apache.axis.encoding.XMLType.XSD_STRING,
-				javax.xml.rpc.ParameterMode.IN);
-		call.addParameter(new QName(namespace, "businessCode"),
-				org.apache.axis.encoding.XMLType.XSD_STRING,
-				javax.xml.rpc.ParameterMode.IN);
-		call.addParameter(new QName(namespace, "businessInfo"),
-				org.apache.axis.encoding.XMLType.XSD_STRING,
-				javax.xml.rpc.ParameterMode.IN);
+		call.addParameter(new QName(namespace, "userId"), org.apache.axis.encoding.XMLType.XSD_STRING, javax.xml.rpc.ParameterMode.IN);
+		call.addParameter(new QName(namespace, "userPassword"), org.apache.axis.encoding.XMLType.XSD_STRING, javax.xml.rpc.ParameterMode.IN);
+		call.addParameter(new QName(namespace, "businessCode"), org.apache.axis.encoding.XMLType.XSD_STRING, javax.xml.rpc.ParameterMode.IN);
+		call.addParameter(new QName(namespace, "businessInfo"), org.apache.axis.encoding.XMLType.XSD_STRING, javax.xml.rpc.ParameterMode.IN);
 
 		// 方法的返回值类型
 		call.setReturnType(org.apache.axis.encoding.XMLType.XSD_STRING);
-		String ret = (String) call.invoke(new Object[] { userId, userPassword,
-				businessCode, businessInfo });
+		String ret = (String) call.invoke(new Object[] { userId, userPassword, businessCode, businessInfo });
 		return ret;
 	}
 

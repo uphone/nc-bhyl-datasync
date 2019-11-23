@@ -10,14 +10,25 @@
    	-- 3：删除材料出库单， 
    	-- B1：同步部门数据到Beauty，
    	-- B2：同步人员数据到Beauty，
+   	-- B3：同步岗位数据到Beauty,
    	-- BZ_BE20：同步部门数据到HIS，
    	-- BZ_BE21：同步人员数据到HIS，
    	-- BZ_BE22：同步物料数据到HIS
    req_data varchar(2000),
+   req_data_enc varchar(2000),
    res_data varchar(2000),
    status int default 0,
    err_msg varchar(500)
 );
+
+特别注意事项： 如果是单机部署，请将{home/ufjdk/jre/lib/security/java.security}中的以下内容做更改：
+（取消使用ibm的ssl校验，更改为使用默认的ssl校验）
+# Default JSSE socket factories
+ssl.SocketFactory.provider=com.ibm.jsse2.SSLSocketFactoryImpl
+ssl.ServerSocketFactory.provider=com.ibm.jsse2.SSLServerSocketFactoryImpl
+# WebSphere socket factories (in cryptosf.jar)
+#ssl.SocketFactory.provider=com.ibm.websphere.ssl.protocol.SSLSocketFactory
+#ssl.ServerSocketFactory.provider=com.ibm.websphere.ssl.protocol.SSLServerSocketFactory
  */
 package nc.work.democ;
 
@@ -48,15 +59,26 @@ public class DeptSyncWorkPlugin implements IBackgroundWorkPlugin {
 	private String secKey = "35fd0ec3";
 
 	@Override
-	public PreAlertObject executeTask(BgWorkingContext context)
-			throws BusinessException {
-		LinkedHashMap param = context.getEngineContext().getExecutorContext()
-				.getKeyMap();
+	public PreAlertObject executeTask(BgWorkingContext context) throws BusinessException {
+		LinkedHashMap param = context.getEngineContext().getExecutorContext().getKeyMap();
 		boolean isAll = "1".equals(param.get("isAll"));
 		String code = (String) param.get("code");
 		StringBuilder sql = new StringBuilder();
-		sql.append("select A.code as JGDM,A.name as JGMC,A.shortname as JGJC,");
+		sql.append("select * from (");
+		sql.append(" select A.ts, A.code as JGDM,A.name as JGMC,A.shortname as JGJC,");
 		sql.append(" B.code as SJJGDM,B.name as SJJGMC,");
+		sql.append(" null as ZZJGDM,null as JGDZ,");
+		sql.append(" null as LXR,null as LXDH,");
+		sql.append(" null as EnterpriseID,");
+		sql.append(" null as CompanyID,");
+		sql.append(" null as CompanyDeptID,");
+		sql.append(" decode(A.Enablestate,2,1,0) as Active,");
+		sql.append(" '机构' as JGLB");
+		sql.append(" from org_orgs A left join org_orgs B on A.Pk_Fatherorg=B.pk_org");
+		sql.append(" where A.Isbusinessunit='Y'");
+		sql.append(" union ");
+		sql.append(" select A.ts,A.code as JGDM,A.name as JGMC,A.shortname as JGJC,");
+		sql.append(" nvl(B.code,C.code) as SJJGDM,nvl(B.name,C.name) as SJJGMC,");
 		sql.append(" C.code as ZZJGDM,A.Address as JGDZ,");
 		sql.append(" F.code as LXR,A.Tel as LXDH,");
 		sql.append(" C.code as EnterpriseID,");
@@ -69,32 +91,28 @@ public class DeptSyncWorkPlugin implements IBackgroundWorkPlugin {
 		sql.append(" left join org_dept D on A.glbdef9=D.pk_dept");
 		sql.append(" left join org_orgs E on D.pk_org=E.pk_org");
 		sql.append(" left join bd_psndoc F on A.Principal=F.Pk_Psndoc");
+		sql.append(" ) T ");
 		if (!isAll) {
 			if (code != null && !"".equals(code.trim())) {
-				sql.append(" where A.code='").append(code).append("'");
+				sql.append(" where JGDM='").append(code).append("'");
 			} else {
 				Calendar now = Calendar.getInstance();
 				now.add(Calendar.DATE, -1);
-				String ts = new SimpleDateFormat("yyyy-MM-dd").format(now
-						.getTime());
+				String ts = new SimpleDateFormat("yyyy-MM-dd").format(now.getTime());
 				ts += " 00:00:00";
-				sql.append(" where A.ts >= '").append(ts).append("'");
+				sql.append(" where ts >= '").append(ts).append("'");
 			}
 		}
 		BaseDAO dao = new BaseDAO();
-		List<Map> rows = (List<Map>) dao.executeQuery(sql.toString(),
-				new MapListProcessor());
+		List<Map> rows = (List<Map>) dao.executeQuery(sql.toString(), new MapListProcessor());
 		if (rows == null || rows.size() == 0)
 			return null;
-		String[] keys = new String[] { "JGDM", "JGMC", "JGJC", "SJJGDM",
-				"SJJGMC", "ZZJGDM", "JGDZ", "LXR", "LXDH", "EnterpriseID",
-				"CompanyID", "CompanyDeptID", "Active", "JGLB" };
+		String[] keys = new String[] { "JGDM", "JGMC", "JGJC", "SJJGDM", "SJJGMC", "ZZJGDM", "JGDZ", "LXR", "LXDH", "EnterpriseID", "CompanyID", "CompanyDeptID", "Active", "JGLB" };
 		String method = (String) param.get("method");
 		String url = (String) param.get("url");
 		String namespace = (String) param.get("namespace");
 		for (Map row : rows) {
-			String time1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-					.format(Calendar.getInstance().getTime());
+			String time1 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
 			StringBuilder xml = new StringBuilder();
 			xml.append("<NETHIS><CSXX>");
 			for (String key : keys) {
@@ -106,8 +124,7 @@ public class DeptSyncWorkPlugin implements IBackgroundWorkPlugin {
 			xml.append("</CSXX></NETHIS>");
 			Map serviceParam = new HashMap();
 			String businessInfo = xml.toString();
-			String businessInfoEnc = DemocWorkUtil.DESEncrypt(secKey,
-					businessInfo);
+			String businessInfoEnc = DemocWorkUtil.DESEncrypt(secKey, businessInfo);
 			serviceParam.put("url", url);
 			serviceParam.put("namespace", namespace);
 			serviceParam.put("method", method);
@@ -119,22 +136,18 @@ public class DeptSyncWorkPlugin implements IBackgroundWorkPlugin {
 				 * <DocumentElement> <Result> <RST>T</RST> <MSG>操作成功！</MSG>
 				 * </Result> </DocumentElement>
 				 */
-				String rst = resData.substring(resData.indexOf("<RST>") + 5,
-						resData.indexOf("</RST>"));
+				String rst = resData.substring(resData.indexOf("<RST>") + 5, resData.indexOf("</RST>"));
 				// HashMap retMap = new XmlMapper().readValue(resData,
 				// HashMap.class);
 				// String rst = (String) ((Map)
 				// retMap.get("Result")).get("RST");
 				if ("F".equalsIgnoreCase(rst)) {
-					String errMsg = resData.substring(
-							resData.indexOf("<MSG>") + 5,
-							resData.indexOf("</MSG>"));
+					String errMsg = resData.substring(resData.indexOf("<MSG>") + 5, resData.indexOf("</MSG>"));
 					throw new Exception(errMsg);
 				}
 				String pk_log = OidGenerator.getInstance().nextOid();
 				String logSql = "insert into BHYL_DATASYNC_LOG(PK_LOG,TS,TIME1,TIME2,ITF_NAME,REQ_DATA,REQ_DATA_ENC,RES_DATA,STATUS) values(?,?,?,?,?,?,?,?,?)";
-				String time2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-						.format(Calendar.getInstance().getTime());
+				String time2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
 				SQLParameter parameter = new SQLParameter();
 				parameter.addParam(pk_log);
 				parameter.addParam(time2);
@@ -150,8 +163,7 @@ public class DeptSyncWorkPlugin implements IBackgroundWorkPlugin {
 				Logger.error(ex);
 				String pk_log = OidGenerator.getInstance().nextOid();
 				String logSql = "insert into BHYL_DATASYNC_LOG(PK_LOG,TS,TIME1,TIME2,ITF_NAME,REQ_DATA,REQ_DATA_ENC,RES_DATA,STATUS,ERR_MSG) values(?,?,?,?,?,?,?,?,?,?)";
-				String time2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-						.format(Calendar.getInstance().getTime());
+				String time2 = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(Calendar.getInstance().getTime());
 				SQLParameter parameter = new SQLParameter();
 				parameter.addParam(pk_log);
 				parameter.addParam(time2);
@@ -191,8 +203,7 @@ public class DeptSyncWorkPlugin implements IBackgroundWorkPlugin {
 		String actionUrl = "http://tempuri.org/nethis_common_business"; // http://tempuri.org/nethis_common_business
 		String method = (String) param.get("method"); // "nethis_common_business";
 		String userId = DemocWorkUtil.DESEncrypt(secKey, "shbh"); // "shbh";
-		String userPassword = DemocWorkUtil.DESEncrypt(secKey,
-				"689222BDC8BD33045F75C5C8411F41B4049D4618"); // "689222BDC8BD33045F75C5C8411F41B4049D4618";
+		String userPassword = DemocWorkUtil.DESEncrypt(secKey, "689222BDC8BD33045F75C5C8411F41B4049D4618"); // "689222BDC8BD33045F75C5C8411F41B4049D4618";
 		String businessCode = "BZ_BE20";
 		String businessInfo = (String) param.get("businessInfo");
 		Service service = new Service();
@@ -202,23 +213,14 @@ public class DeptSyncWorkPlugin implements IBackgroundWorkPlugin {
 		call.setUseSOAPAction(true);
 		call.setOperationName(new QName(namespace, method));
 		// 该方法需要4个参数
-		call.addParameter(new QName(namespace, "userId"),
-				org.apache.axis.encoding.XMLType.XSD_STRING,
-				javax.xml.rpc.ParameterMode.IN);
-		call.addParameter(new QName(namespace, "userPassword"),
-				org.apache.axis.encoding.XMLType.XSD_STRING,
-				javax.xml.rpc.ParameterMode.IN);
-		call.addParameter(new QName(namespace, "businessCode"),
-				org.apache.axis.encoding.XMLType.XSD_STRING,
-				javax.xml.rpc.ParameterMode.IN);
-		call.addParameter(new QName(namespace, "businessInfo"),
-				org.apache.axis.encoding.XMLType.XSD_STRING,
-				javax.xml.rpc.ParameterMode.IN);
+		call.addParameter(new QName(namespace, "userId"), org.apache.axis.encoding.XMLType.XSD_STRING, javax.xml.rpc.ParameterMode.IN);
+		call.addParameter(new QName(namespace, "userPassword"), org.apache.axis.encoding.XMLType.XSD_STRING, javax.xml.rpc.ParameterMode.IN);
+		call.addParameter(new QName(namespace, "businessCode"), org.apache.axis.encoding.XMLType.XSD_STRING, javax.xml.rpc.ParameterMode.IN);
+		call.addParameter(new QName(namespace, "businessInfo"), org.apache.axis.encoding.XMLType.XSD_STRING, javax.xml.rpc.ParameterMode.IN);
 
 		// 方法的返回值类型
 		call.setReturnType(org.apache.axis.encoding.XMLType.XSD_STRING);
-		String ret = (String) call.invoke(new Object[] { userId, userPassword,
-				businessCode, businessInfo });
+		String ret = (String) call.invoke(new Object[] { userId, userPassword, businessCode, businessInfo });
 		return ret;
 	}
 }

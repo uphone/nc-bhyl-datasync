@@ -33,30 +33,32 @@ public class PsnSyncWorkPlugin2 implements IBackgroundWorkPlugin {
 		boolean isAll = "1".equals(param.get("isAll"));
 		String code = (String) param.get("code");
 		StringBuilder sql = new StringBuilder();
-		sql.append("select B.code as JGDM,");
-		sql.append(" A.clerkcode as RYGH,");
+		sql.append("select * from (");
+		sql.append(" select A.ts,C.code,");
+		sql.append(" B.code as JGDM,A.clerkcode as RYGH,");
 		sql.append(" C.name as XM,");
 		sql.append(" C.sex as XB,");
 		sql.append(" C.Birthdate as CSRQ,");
 		sql.append(" D.Code as RYLB,");
-		sql.append(" E.Jobcode as RYZC,F.Code as KSDM,F.name as KSMC,null as YSJJ,C.id as SFZH,");
+		sql.append(" E.postcode as RYZC,F.Code as KSDM,F.name as KSMC,null as YSJJ,C.id as SFZH,");
 		sql.append(" F.Def1 as CostDeptID,C.secret_email as Mail,");
 		sql.append(" C.Mobile as Tel,A.Poststat as StatuID,A.Ismainjob as ismainjob");
 		sql.append(" from hi_psnjob A left join org_orgs B on A.pk_hrorg=B.Pk_Org");
 		sql.append(" inner join bd_psndoc C on A.pk_psndoc=C.pk_psndoc");
 		sql.append(" left join bd_psncl D on A.pk_psncl = D.Pk_Psncl");
-		sql.append(" left join om_job E on A.Pk_Job=E.Pk_Job");
+		sql.append(" left join om_post E on A.Pk_post=E.Pk_post");
 		sql.append(" left join org_dept F on A.Pk_Dept=F.Pk_Dept");
+		sql.append(" ) T ");
 		if (!isAll) {
 			if (code != null && !"".equals(code.trim())) {
-				sql.append(" where C.code='").append(code).append("'");
+				sql.append(" where code='").append(code).append("'");
 			} else {
 				Calendar now = Calendar.getInstance();
 				now.add(Calendar.DATE, -1);
 				String ts = new SimpleDateFormat("yyyy-MM-dd").format(now
 						.getTime());
 				ts += " 00:00:00";
-				sql.append(" where A.ts >= '").append(ts).append("'");
+				sql.append(" where ts >= '").append(ts).append("'");
 			}
 		}
 		BaseDAO dao = new BaseDAO();
