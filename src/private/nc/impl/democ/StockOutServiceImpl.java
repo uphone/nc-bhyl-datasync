@@ -24,7 +24,7 @@ import nc.bs.logging.Logger;
 import nc.bs.uap.oid.OidGenerator;
 import nc.itf.democ.IStockOutService;
 import nc.itf.ic.onhand.OnhandResService;
-import nc.itf.pub.web.ILoginQueryService;
+//import nc.itf.pub.web.ILoginQueryService;
 import nc.itf.uap.pf.IplatFormEntry;
 import nc.jdbc.framework.SQLParameter;
 import nc.jdbc.framework.processor.ColumnProcessor;
@@ -77,12 +77,12 @@ public class StockOutServiceImpl implements IStockOutService {
 			}
 
 			// check user & password
-			String pwd = new String(Base64.decodeBase64(userPassword.getBytes()));
-			ILoginQueryService loginQueryService = NCLocator.getInstance().lookup(ILoginQueryService.class);
-			UserVO userVO = loginQueryService.getUserVOByUserPass(userCode, pwd);
-			if (userVO == null) {
-				throw new Exception("用户名或密码错误");
-			}
+//			String pwd = new String(Base64.decodeBase64(userPassword.getBytes()));
+//			ILoginQueryService loginQueryService = NCLocator.getInstance().lookup(ILoginQueryService.class);
+//			UserVO userVO = loginQueryService.getUserVOByUserPass(userCode, pwd);
+//			if (userVO == null) {
+//				throw new Exception("用户名或密码错误");
+//			}
 
 			// check businessInfo
 			if (!param.containsKey("businessInfo")) {

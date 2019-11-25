@@ -10,13 +10,11 @@ import nc.bs.framework.common.NCLocator;
 import nc.bs.logging.Logger;
 import nc.bs.uap.oid.OidGenerator;
 import nc.itf.democ.IStockNumQueryService;
-import nc.itf.pub.web.ILoginQueryService;
 import nc.jdbc.framework.SQLParameter;
 import nc.jdbc.framework.processor.ColumnProcessor;
 import nc.pubitf.ic.onhand.IOnhandQry;
 import nc.vo.ic.onhand.entity.OnhandVO;
 import nc.vo.ic.onhand.pub.OnhandQryCond;
-import nc.vo.sm.UserVO;
 
 import org.apache.commons.codec.binary.Base64;
 
@@ -77,11 +75,12 @@ public class StockNumQueryServiceImpl implements IStockNumQueryService {
 
 			// check user & password
 			String pwd = new String(Base64.decodeBase64(userPassword.getBytes()));
-			ILoginQueryService loginQueryService = NCLocator.getInstance().lookup(ILoginQueryService.class);
-			UserVO userVO = loginQueryService.getUserVOByUserPass(userCode, pwd);
-			if (userVO == null) {
-				throw new Exception("用户名或密码错误");
-			}
+			
+//			ILoginQueryService loginQueryService = NCLocator.getInstance().lookup(ILoginQueryService.class);
+//			UserVO userVO = loginQueryService.getUserVOByUserPass(userCode, pwd);
+//			if (userVO == null) {
+//				throw new Exception("用户名或密码错误");
+//			}
 
 			String sql1 = "select pk_org from org_orgs where ISBUSINESSUNIT='Y' and ENABLESTATE=2 and code='" + orgCode + "'";
 			String pk_org = (String) dao.executeQuery(sql1, new ColumnProcessor());

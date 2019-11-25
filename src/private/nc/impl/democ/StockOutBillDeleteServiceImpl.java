@@ -19,7 +19,6 @@ import nc.bs.uap.oid.OidGenerator;
 import nc.itf.democ.IStockOutBillDeleteService;
 import nc.itf.ic.general.query.IICPageQuery;
 import nc.itf.ic.onhand.OnhandResService;
-import nc.itf.pub.web.ILoginQueryService;
 import nc.itf.uap.pf.IplatFormEntry;
 import nc.jdbc.framework.SQLParameter;
 import nc.jdbc.framework.processor.ColumnProcessor;
@@ -64,14 +63,6 @@ public class StockOutBillDeleteServiceImpl implements IStockOutBillDeleteService
 			String userPassword = (String) param.get("userPassword");
 			if (userPassword == null || "".equals(userPassword.trim())) {
 				throw new Exception("用户密码不能为空[userPassword]");
-			}
-
-			// check user & password
-			String pwd = new String(Base64.decodeBase64(userPassword.getBytes()));
-			ILoginQueryService loginQueryService = NCLocator.getInstance().lookup(ILoginQueryService.class);
-			UserVO userVO = loginQueryService.getUserVOByUserPass(userCode, pwd);
-			if (userVO == null) {
-				throw new Exception("用户名或密码错误");
 			}
 
 			// check businessInfo
@@ -139,7 +130,7 @@ public class StockOutBillDeleteServiceImpl implements IStockOutBillDeleteService
 			HashMap hmPfExParams = null;
 			IplatFormEntry platFormEntryService = NCLocator.getInstance().lookup(IplatFormEntry.class);
 			Object actionResult = platFormEntryService.processAction(actionName, billType, workflownotevo, aggVO, userObj, hmPfExParams);
-			
+
 			// 删除
 			IBill[] billVOs2 = queryService.pageLazyQueryByIDs(new String[] { billId }, MaterialOutVO.class.getName());
 			MaterialOutVO aggVO2 = (MaterialOutVO) billVOs[0];
@@ -148,7 +139,7 @@ public class StockOutBillDeleteServiceImpl implements IStockOutBillDeleteService
 			Object userObj2 = null;
 			HashMap hmPfExParams2 = null;
 			Object actionResult2 = platFormEntryService.processAction(actionName2, billType, workflownotevo2, aggVO2, userObj2, hmPfExParams2);
-			
+
 			Map ret = new HashMap();
 			ret.put("RST", "T");
 
