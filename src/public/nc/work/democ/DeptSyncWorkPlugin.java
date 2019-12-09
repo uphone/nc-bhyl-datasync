@@ -103,6 +103,7 @@ public class DeptSyncWorkPlugin implements IBackgroundWorkPlugin {
 				sql.append(" where ts >= '").append(ts).append("'");
 			}
 		}
+		sql.append(" order by ts");
 		BaseDAO dao = new BaseDAO();
 		List<Map> rows = (List<Map>) dao.executeQuery(sql.toString(), new MapListProcessor());
 		if (rows == null || rows.size() == 0)
