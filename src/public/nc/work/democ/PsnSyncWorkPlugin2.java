@@ -32,7 +32,7 @@ public class PsnSyncWorkPlugin2 implements IBackgroundWorkPlugin {
 		String code = (String) param.get("code");
 		StringBuilder sql = new StringBuilder();
 		sql.append("select * from (");
-		sql.append(" select A.ts,A.endflag,C.code,");
+		sql.append(" select A.ts,A.begindate,A.endflag,C.code,");
 		sql.append(" B.code as JGDM,A.clerkcode as RYGH,");
 		sql.append(" C.name as XM,");
 		sql.append(" C.sex as XB,");
@@ -58,7 +58,7 @@ public class PsnSyncWorkPlugin2 implements IBackgroundWorkPlugin {
 				sql.append(" where ts >= '").append(ts).append("'");
 			}
 		}
-		sql.append(" order by ts");
+		sql.append(" order by begindate,ts");
 		BaseDAO dao = new BaseDAO();
 		List<Map> rows = (List<Map>) dao.executeQuery(sql.toString(), new MapListProcessor());
 		if (rows == null || rows.size() == 0)
