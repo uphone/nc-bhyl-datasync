@@ -42,7 +42,7 @@ public class PsnSyncWorkPlugin2 implements IBackgroundWorkPlugin {
 	            "       E.postcode as \"RYZC\",F.Code as \"KSDM\",F.name as \"KSMC\",null as \"YSJJ\",C.id as \"SFZH\", \n" +
 	            "       A.jobglbdef2 as \"CostDeptID\",C.secret_email as \"Mail\",C.Mobile as \"Tel\",\n" +
 	            "       H.endflag as \"EF2\",A.trnsevent,\n" +
-	            "       case when (H.endflag='Y' and A.trnsevent=4) then 'Y' else 'N' end as \"StatuID\",\n" +
+	            "       case when (H.endflag='Y' and A.trnsevent=4) then 'N' else 'Y' end as \"StatuID\",\n" +
 	            "       A.Ismainjob as \"ismainjob\"\n" +
 	            "from hi_psnjob A left join org_orgs B on A.pk_hrorg=B.Pk_Org\n" +
 	            "     inner join bd_psndoc C on A.pk_psndoc=C.pk_psndoc\n" +
