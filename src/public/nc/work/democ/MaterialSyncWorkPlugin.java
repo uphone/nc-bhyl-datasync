@@ -33,18 +33,18 @@ public class MaterialSyncWorkPlugin implements IBackgroundWorkPlugin {
 		boolean isAll = "1".equals(param.get("isAll"));
 		String code = (String) param.get("code");
 		StringBuilder sql = new StringBuilder();
-		sql.append("select * from (");
-		sql.append(" select 'BHJT' as JGDM,A.code as YPDM,A.Name as YPMC,A.Materialspec as YPGG,");
-		sql.append(" A.def3 as YPJX,B.Code as YPLB,");
-		sql.append(" null as TJFL,null as GNFL,");
-		sql.append(" C.Name as CJMC,null as YPLY,null as PZWH,1 as JYBZ,");
-		sql.append(" D.Name as YPDW,0 as YPDJ,A.def1 as YPJL,A.def2 as JLDW,1 as JLDWXS,");
-		sql.append(" D.name as MZDW,1 as MZDWXS,null as ZYDW,null as ZYDWXS,");
-		sql.append(" null as ZXDW,null ZXDJ,null as ZHXS,null as CYJL");
-		sql.append(" from bd_material A join bd_marbasclass B on A.Pk_Marbasclass=B.Pk_Marbasclass");
-		sql.append(" left join bd_branddoc C on A.Pk_Brand=C.Pk_Brand");
-		sql.append(" join bd_measdoc D on A.Pk_Measdoc=D.Pk_Measdoc");
-		sql.append(" ) T ");
+		sql.append("select * From (\n" +
+	            "select A.pk_material as \"ID\", 'BHJT' as JGDM,A.code as YPDM,A.Name as YPMC,A.Materialspec as YPGG,\n" +
+	            "       A.def3 as YPJX,B.Code as YPLB,\n" +
+	            "       null as TJFL,null as GNFL,\n" +
+	            "       C.Name as CJMC,null as YPLY,null as PZWH,1 as JYBZ,\n" +
+	            "       D.Name as YPDW,0 as YPDJ,A.def1 as YPJL,A.def2 as JLDW,1 as JLDWXS,\n" +
+	            "       D.name as MZDW,1 as MZDWXS,null as ZYDW,null as ZYDWXS,\n" +
+	            "       null as ZXDW,null ZXDJ,null as ZHXS,null as CYJL\n" +
+	            "from bd_material A join bd_marbasclass B on A.Pk_Marbasclass=B.Pk_Marbasclass\n" +
+	            "     left join bd_branddoc C on A.Pk_Brand=C.Pk_Brand\n" +
+	            "     join bd_measdoc D on A.Pk_Measdoc=D.Pk_Measdoc \n" +
+	            ") T ");
 		if (!isAll) {
 			if (code != null && !"".equals(code.trim())) {
 				sql.append(" where YPDM='").append(code).append("'");
@@ -61,7 +61,7 @@ public class MaterialSyncWorkPlugin implements IBackgroundWorkPlugin {
 		List<Map> rows = (List<Map>) dao.executeQuery(sql.toString(), new MapListProcessor());
 		if (rows == null || rows.size() == 0)
 			return null;
-		String[] keys = new String[] { "JGDM", "YPDM", "YPMC", "YPGG", "YPJX", "YPLB", "TJFL", "GNFL", "CJMC", "YPLY", "PZWH", "JYBZ", "YPDW", "YPDJ", "YPJL", "JLDW", "JLDWXS", "MZDW", "MZDWXS", "ZYDW", "ZYDWXS", "ZXDW", "ZXDJ", "ZHXS", "CYJL" };
+		String[] keys = new String[] {"ID", "JGDM", "YPDM", "YPMC", "YPGG", "YPJX", "YPLB", "TJFL", "GNFL", "CJMC", "YPLY", "PZWH", "JYBZ", "YPDW", "YPDJ", "YPJL", "JLDW", "JLDWXS", "MZDW", "MZDWXS", "ZYDW", "ZYDWXS", "ZXDW", "ZXDJ", "ZHXS", "CYJL" };
 		String method = (String) param.get("method");
 		String url = (String) param.get("url");
 		String namespace = (String) param.get("namespace");

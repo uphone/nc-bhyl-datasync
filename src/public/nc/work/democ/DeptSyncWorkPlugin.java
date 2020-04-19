@@ -64,34 +64,35 @@ public class DeptSyncWorkPlugin implements IBackgroundWorkPlugin {
 		boolean isAll = "1".equals(param.get("isAll"));
 		String code = (String) param.get("code");
 		StringBuilder sql = new StringBuilder();
-		sql.append("select * from (");
-		sql.append(" select A.ts, A.code as JGDM,A.name as JGMC,A.shortname as JGJC,");
-		sql.append(" B.code as SJJGDM,B.name as SJJGMC,");
-		sql.append(" null as ZZJGDM,null as JGDZ,");
-		sql.append(" null as LXR,null as LXDH,");
-		sql.append(" null as EnterpriseID,");
-		sql.append(" null as CompanyID,");
-		sql.append(" null as CompanyDeptID,");
-		sql.append(" decode(A.Enablestate,2,1,0) as Active,");
-		sql.append(" '字更' as JGLB");
-		sql.append(" from org_orgs A left join org_orgs B on A.Pk_Fatherorg=B.pk_org");
-		sql.append(" where A.Isbusinessunit='Y'");
-		sql.append(" union ");
-		sql.append(" select A.ts,A.code as JGDM,A.name as JGMC,A.shortname as JGJC,");
-		sql.append(" nvl(B.code,C.code) as SJJGDM,nvl(B.name,C.name) as SJJGMC,");
-		sql.append(" C.code as ZZJGDM,A.Address as JGDZ,");
-		sql.append(" F.code as LXR,A.Tel as LXDH,");
-		sql.append(" C.code as EnterpriseID,");
-		sql.append(" E.code as CompanyID,");
-		sql.append(" D.code as CompanyDeptID,");
-		sql.append(" decode(A.Enablestate,2,1,0) as Active,");
-		sql.append(" decode(A.glbdef8,'Y','親片','字更') as JGLB");
-		sql.append(" from org_dept A left join org_dept B on A.Pk_Fatherorg=B.Pk_Dept");
-		sql.append(" left join org_orgs C on A.Pk_Org=C.Pk_Org");
-		sql.append(" left join org_dept D on A.glbdef9=D.pk_dept");
-		sql.append(" left join org_orgs E on D.pk_org=E.pk_org");
-		sql.append(" left join bd_psndoc F on A.Principal=F.Pk_Psndoc");
-		sql.append(" ) T ");
+		sql.append("select * from (\n" +
+	            "select A.ts, A.Pk_Org as \"ID\", A.code as \"JGDM\",A.name as \"JGMC\",A.shortname as \"JGJC\",\n" +
+	            "B.code as \"SJJGDM\",B.name as \"SJJGMC\",\n" +
+	            "null as \"ZZJGDM\",null as \"JGDZ\",\n" +
+	            "null as \"LXR\",null as \"LXDH\",\n" +
+	            "null as \"EnterpriseID\",\n" +
+	            "null as \"CompanyID\",\n" +
+	            "null as \"CompanyDeptID\",\n" +
+	            "decode(A.Enablestate,2,1,0) as \"Active\",\n" +
+	            "'字更' as \"JGLB\"\n" +
+	            "from org_orgs A left join org_orgs B on A.Pk_Fatherorg=B.pk_org\n" +
+	            "where A.Isbusinessunit='Y'\n" +
+	            "union\n" +
+	            "select A.ts,A.pk_dept as \"ID\", A.code as \"JGDM\",A.name as \"JGMC\",A.shortname as \"JGJC\",\n" +
+	            "nvl(B.code,C.code) as \"SJJGDM\",\n" +
+	            "nvl(B.name,C.name) as \"SJJGMC\",\n" +
+	            "C.code as \"ZZJGDM\",A.Address as \"JGDZ\",\n" +
+	            "F.code as \"LXR\",A.Tel as \"LXDH\",\n" +
+	            "C.code as \"EnterpriseID\",\n" +
+	            "E.code as \"CompanyID\",\n" +
+	            "D.code as \"CompanyDeptID\",\n" +
+	            "decode(A.Enablestate,2,1,0) as \"Active\",\n" +
+	            "decode(A.glbdef8,'Y','親片','字更') as \"JGLB\"\n" +
+	            "from org_dept A left join org_dept B on A.Pk_Fatherorg=B.Pk_Dept\n" +
+	            "left join org_orgs C on A.Pk_Org=C.Pk_Org\n" +
+	            "left join org_dept D on A.glbdef9=D.pk_dept\n" +
+	            "left join org_orgs E on D.pk_org=E.pk_org\n" +
+	            "left join bd_psndoc F on A.Principal=F.Pk_Psndoc\n" +
+	            ") T ");
 		if (!isAll) {
 			if (code != null && !"".equals(code.trim())) {
 				sql.append(" where JGDM='").append(code).append("'");
@@ -108,7 +109,7 @@ public class DeptSyncWorkPlugin implements IBackgroundWorkPlugin {
 		List<Map> rows = (List<Map>) dao.executeQuery(sql.toString(), new MapListProcessor());
 		if (rows == null || rows.size() == 0)
 			return null;
-		String[] keys = new String[] { "JGDM", "JGMC", "JGJC", "SJJGDM", "SJJGMC", "ZZJGDM", "JGDZ", "LXR", "LXDH", "EnterpriseID", "CompanyID", "CompanyDeptID", "Active", "JGLB" };
+		String[] keys = new String[] {"ID", "JGDM", "JGMC", "JGJC", "SJJGDM", "SJJGMC", "ZZJGDM", "JGDZ", "LXR", "LXDH", "EnterpriseID", "CompanyID", "CompanyDeptID", "Active", "JGLB" };
 		String method = (String) param.get("method");
 		String url = (String) param.get("url");
 		String namespace = (String) param.get("namespace");

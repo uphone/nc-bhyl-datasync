@@ -33,22 +33,27 @@ public class PsnSyncWorkPlugin implements IBackgroundWorkPlugin {
 		boolean isAll = "1".equals(param.get("isAll"));
 		String code = (String) param.get("code");
 		StringBuilder sql = new StringBuilder();
-		sql.append("select * from (");
-		sql.append(" select A.ts,A.begindate,C.code,A.endflag,");
-		sql.append(" B.code as JGDM,A.clerkcode as RYGH,");
-		sql.append(" C.name as XM,");
-		sql.append(" C.sex as XB,");
-		sql.append(" C.Birthdate as CSRQ,");
-		sql.append(" D.Code as RYLB,");
-		sql.append(" E.postcode as RYZC,F.Code as KSDM,F.name as KSMC,null as YSJJ,C.id as SFZH,");
-		sql.append(" F.Def1 as CostDeptID,C.secret_email as Mail,");
-		sql.append(" C.Mobile as Tel,A.Poststat as StatuID,A.Ismainjob as ismainjob");
-		sql.append(" from hi_psnjob A left join org_orgs B on A.pk_hrorg=B.Pk_Org");
-		sql.append(" inner join bd_psndoc C on A.pk_psndoc=C.pk_psndoc");
-		sql.append(" left join bd_psncl D on A.pk_psncl = D.Pk_Psncl");
-		sql.append(" left join om_post E on A.Pk_post=E.Pk_post");
-		sql.append(" left join org_dept F on A.Pk_Dept=F.Pk_Dept");
-		sql.append(" ) T ");
+		sql.append("select * from (\n" +
+	            "select A.ts, A.begindate,B.code as \"JGDM\",A.endflag,\n" +
+	            "       C.pk_psndoc as \"ID\",\n" +
+	            "       C.code as \"RYGH\",\n" +
+	            "       C.name as \"XM\",\n" +
+	            "       C.sex as \"XB\",\n" +
+	            "       C.Birthdate as \"CSRQ\",\n" +
+	            "       D.Code as \"RYLB\",\n" +
+	            "       E.postcode as \"RYZC\",F.Code as \"KSDM\",F.name as \"KSMC\",null as \"YSJJ\",C.id as \"SFZH\", \n" +
+	            "       A.jobglbdef2 as \"CostDeptID\",C.secret_email as \"Mail\",C.Mobile as \"Tel\",\n" +
+	            "       H.endflag as \"EF2\",A.trnsevent,\n" +
+	            "       case when (H.endflag='Y' and A.trnsevent=4) then 'Y' else 'N' end as \"StatuID\",\n" +
+	            "       A.Ismainjob as \"ismainjob\"\n" +
+	            "from hi_psnjob A left join org_orgs B on A.pk_hrorg=B.Pk_Org\n" +
+	            "     inner join bd_psndoc C on A.pk_psndoc=C.pk_psndoc\n" +
+	            "     left join bd_psncl D on A.pk_psncl = D.Pk_Psncl\n" +
+	            "     left join om_post E on A.pk_post=E.pk_post\n" +
+	            "     left join org_dept F on A.Pk_Dept=F.Pk_Dept\n" +
+	            "     left join org_dept G on F.def1=G.pk_dept\n" +
+	            "     left join Hi_psnorg H on A.pk_psndoc=H.pk_Psndoc\n" +
+	            ") T ");
 		if (!isAll) {
 			if (code != null && !"".equals(code.trim())) {
 				sql.append(" where code='").append(code).append("'");
@@ -65,7 +70,7 @@ public class PsnSyncWorkPlugin implements IBackgroundWorkPlugin {
 		List<Map> rows = (List<Map>) dao.executeQuery(sql.toString(), new MapListProcessor());
 		if (rows == null || rows.size() == 0)
 			return null;
-		String[] keys = new String[] { "JGDM", "RYGH", "XM", "XB", "CSRQ", "RYLB", "RYZC", "KSDM", "KSMC", "YSJJ", "SFZH", "CostDeptID", "Mail", "Tel", "StatuID", "ismainjob", "endflag" };
+		String[] keys = new String[] {"ID", "JGDM", "RYGH", "XM", "XB", "CSRQ", "RYLB", "RYZC", "KSDM", "KSMC", "YSJJ", "SFZH", "CostDeptID", "Mail", "Tel", "StatuID", "ismainjob", "endflag" };
 		String method = (String) param.get("method");
 		String url = (String) param.get("url");
 		String namespace = (String) param.get("namespace");

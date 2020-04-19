@@ -31,14 +31,19 @@ public class PostSyncWorkPlugin2 implements IBackgroundWorkPlugin {
 		boolean isAll = "1".equals(param.get("isAll"));
 		String code = (String) param.get("code");
 		StringBuilder sql = new StringBuilder();
-		sql.append("select * from (");
-		sql.append(" select A.ts,A.postcode as JobTypeID,");
-		sql.append(" A.postname as JobTypeName,");
-		sql.append(" decode(A.Enablestate,2,1,0) as Active,");
-		sql.append(" B.code as ORGCODE");
-		sql.append(" from om_post A");
-		sql.append(" left join org_orgs B on A.Pk_Org=B.Pk_Org");
-		sql.append(" ) T ");
+		sql.append("select * from (\n" +
+	            "select A.ts, A.pk_post as \"ID\", \n" +
+	            "A.pk_org,\n" +
+	            "A.pk_dept,\n" +
+	            "A.isstd,\n" +
+	            "A.pk_poststd, \n" +
+	            "A.postcode as \"JobTypeID\",\n" +
+	            "A.postname as \"JobTypeName\",\n" +
+	            "decode(A.Enablestate,2,1,0) as \"Active\",\n" +
+	            "B.code as \"ORGCODE\"\n" +
+	            "  from om_post A\n" +
+	            "left join org_orgs B on A.Pk_Org=B.Pk_Org\n" +
+	            ") T ");
 		if (!isAll) {
 			if (code != null && !"".equals(code.trim())) {
 				sql.append(" where JobTypeID='").append(code).append("'");
@@ -54,7 +59,7 @@ public class PostSyncWorkPlugin2 implements IBackgroundWorkPlugin {
 		List<Map> rows = (List<Map>) dao.executeQuery(sql.toString(), new MapListProcessor());
 		if (rows == null || rows.size() == 0)
 			return null;
-		String[] keys = new String[] { "JobTypeID", "JobTypeName", "Active", "ORGCODE" };
+		String[] keys = new String[] {"ID","pk_prg","pk_dept","isstd","pk_poststd", "JobTypeID", "JobTypeName", "Active", "ORGCODE" };
 		String method = (String) param.get("method");
 		String url = (String) param.get("url");
 		String namespace = (String) param.get("namespace");
