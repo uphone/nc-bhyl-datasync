@@ -59,7 +59,7 @@ public class PostSyncWorkPlugin2 implements IBackgroundWorkPlugin {
 		List<Map> rows = (List<Map>) dao.executeQuery(sql.toString(), new MapListProcessor());
 		if (rows == null || rows.size() == 0)
 			return null;
-		String[] keys = new String[] {"ID","pk_prg","pk_dept","isstd","pk_poststd", "JobTypeID", "JobTypeName", "Active", "ORGCODE" };
+		String[] keys = new String[] {"ID","pk_org","pk_dept","isstd","pk_poststd", "JobTypeID", "JobTypeName", "Active", "ORGCODE" };
 		String method = (String) param.get("method");
 		String url = (String) param.get("url");
 		String namespace = (String) param.get("namespace");
