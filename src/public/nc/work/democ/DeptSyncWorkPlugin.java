@@ -65,34 +65,34 @@ public class DeptSyncWorkPlugin implements IBackgroundWorkPlugin {
 		String code = (String) param.get("code");
 		StringBuilder sql = new StringBuilder();
 		sql.append("select * from (\n" +
-	            "select A.ts, A.Pk_Org as \"ID\", A.code as \"JGDM\",A.name as \"JGMC\",A.shortname as \"JGJC\",\n" +
-	            "B.code as \"SJJGDM\",B.name as \"SJJGMC\",\n" +
-	            "null as \"ZZJGDM\",null as \"JGDZ\",\n" +
-	            "null as \"LXR\",null as \"LXDH\",\n" +
-	            "null as \"EnterpriseID\",\n" +
-	            "null as \"CompanyID\",\n" +
-	            "null as \"CompanyDeptID\",\n" +
-	            "decode(A.Enablestate,2,1,0) as \"Active\",\n" +
-	            "'字更' as \"JGLB\"\n" +
-	            "from org_orgs A left join org_orgs B on A.Pk_Fatherorg=B.pk_org\n" +
-	            "where A.Isbusinessunit='Y'\n" +
-	            "union\n" +
-	            "select A.ts,A.pk_dept as \"ID\", A.code as \"JGDM\",A.name as \"JGMC\",A.shortname as \"JGJC\",\n" +
-	            "nvl(B.code,C.code) as \"SJJGDM\",\n" +
-	            "nvl(B.name,C.name) as \"SJJGMC\",\n" +
-	            "C.code as \"ZZJGDM\",A.Address as \"JGDZ\",\n" +
-	            "F.code as \"LXR\",A.Tel as \"LXDH\",\n" +
-	            "C.code as \"EnterpriseID\",\n" +
-	            "E.code as \"CompanyID\",\n" +
-	            "D.code as \"CompanyDeptID\",\n" +
-	            "decode(A.Enablestate,2,1,0) as \"Active\",\n" +
-	            "decode(A.glbdef8,'Y','親片','字更') as \"JGLB\"\n" +
-	            "from org_dept A left join org_dept B on A.Pk_Fatherorg=B.Pk_Dept\n" +
-	            "left join org_orgs C on A.Pk_Org=C.Pk_Org\n" +
-	            "left join org_dept D on A.glbdef9=D.pk_dept\n" +
-	            "left join org_orgs E on D.pk_org=E.pk_org\n" +
-	            "left join bd_psndoc F on A.Principal=F.Pk_Psndoc\n" +
-	            ") T ");
+                "select A.ts, A.Pk_Org as ID, A.code as JGDM,A.name as JGMC,A.shortname as JGJC,\n" +
+                "B.code as SJJGDM,B.name as SJJGMC,\n" +
+                "null as ZZJGDM,null as JGDZ,\n" +
+                "null as LXR,null as LXDH,\n" +
+                "null as EnterpriseID,\n" +
+                "null as CompanyID,\n" +
+                "null as CompanyDeptID,\n" +
+                "decode(A.Enablestate,2,1,0) as Active,\n" +
+                "'字更' as JGLB\n" +
+                "from org_orgs A left join org_orgs B on A.Pk_Fatherorg=B.pk_org\n" +
+                "where A.Isbusinessunit='Y'\n" +
+                "union\n" +
+                "select A.ts,A.pk_dept as ID, A.code as JGDM,A.name as JGMC,A.shortname as JGJC,\n" +
+                "nvl(B.code,C.code) as SJJGDM,\n" +
+                "nvl(B.name,C.name) as SJJGMC,\n" +
+                "C.code as ZZJGDM,A.Address as JGDZ,\n" +
+                "F.code as LXR,A.Tel as LXDH,\n" +
+                "C.code as EnterpriseID,\n" +
+                "E.code as CompanyID,\n" +
+                "D.code as CompanyDeptID,\n" +
+                "decode(A.Enablestate,2,1,0) as Active,\n" +
+                "decode(A.glbdef8,'Y','親片','字更') as JGLB\n" +
+                "from org_dept A left join org_dept B on A.Pk_Fatherorg=B.Pk_Dept\n" +
+                "left join org_orgs C on A.Pk_Org=C.Pk_Org\n" +
+                "left join org_dept D on A.glbdef9=D.pk_dept\n" +
+                "left join org_orgs E on D.pk_org=E.pk_org\n" +
+                "left join bd_psndoc F on A.Principal=F.Pk_Psndoc\n" +
+                ") T ");
 		if (!isAll) {
 			if (code != null && !"".equals(code.trim())) {
 				sql.append(" where JGDM='").append(code).append("'");

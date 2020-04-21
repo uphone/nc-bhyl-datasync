@@ -31,19 +31,18 @@ public class PostSyncWorkPlugin2 implements IBackgroundWorkPlugin {
 		boolean isAll = "1".equals(param.get("isAll"));
 		String code = (String) param.get("code");
 		StringBuilder sql = new StringBuilder();
-		sql.append("select * from (\n" +
-	            "select A.ts, A.pk_post as \"ID\", \n" +
-	            "A.pk_org,\n" +
-	            "A.pk_dept,\n" +
-	            "A.isstd,\n" +
-	            "A.pk_poststd, \n" +
-	            "A.postcode as \"JobTypeID\",\n" +
-	            "A.postname as \"JobTypeName\",\n" +
-	            "decode(A.Enablestate,2,1,0) as \"Active\",\n" +
-	            "B.code as \"ORGCODE\"\n" +
-	            "  from om_post A\n" +
-	            "left join org_orgs B on A.Pk_Org=B.Pk_Org\n" +
-	            ") T ");
+		sql.append("select * From (\n" +
+                " select A.pk_material as ID, 'BHJT' as JGDM,A.code as YPDM,A.Name as YPMC,A.Materialspec as YPGG,\n" +
+                "       A.def3 as YPJX,B.Code as YPLB,\n" +
+                "       null as TJFL,null as GNFL,\n" +
+                "       C.Name as CJMC,null as YPLY,null as PZWH,1 as JYBZ,\n" +
+                "       D.Name as YPDW,0 as YPDJ,A.def1 as YPJL,A.def2 as JLDW,1 as JLDWXS,\n" +
+                "       D.name as MZDW,1 as MZDWXS,null as ZYDW,null as ZYDWXS,\n" +
+                "       null as ZXDW,null ZXDJ,null as ZHXS,null as CYJL\n" +
+                " from bd_material A join bd_marbasclass B on A.Pk_Marbasclass=B.Pk_Marbasclass\n" +
+                "     left join bd_branddoc C on A.Pk_Brand=C.Pk_Brand\n" +
+                "     join bd_measdoc D on A.Pk_Measdoc=D.Pk_Measdoc \n" +
+                ") T ");
 		if (!isAll) {
 			if (code != null && !"".equals(code.trim())) {
 				sql.append(" where JobTypeID='").append(code).append("'");
